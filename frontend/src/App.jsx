@@ -1,130 +1,110 @@
-// React dashboard UI
+import React, { useState, createContext, useContext, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import './App.css';
+import Sidebar from './components/Sidebar';
+import Dashboard from './pages/Dashboard';
+import Ingest from './pages/Ingest';
+import Extract from './pages/Extract';
+import Classify from './pages/Classify';
+import Route from './pages/Route';
+import Analytics from './pages/Analytics';
+import ThemeToggle from './components/ThemeToggle';
+import HumanIntervention from './pages/HumanIntervention';
 
-import React, { useEffect, useState } from 'react';
+const ThemeContext = createContext();
 
-const API_URL = 'http://localhost:3000/api/documents';
+export const useTheme = () => useContext(ThemeContext);
 
-function WorkflowTracker({ status, timestamps, confidence }) {
-  const stages = [
-    { key: 'Ingested', label: 'Ingested' },
-    { key: 'Extracted', label: 'Extracted' },
-    { key: 'Classified', label: 'Classified' },
-    { key: 'Routed', label: 'Routed' },
-  ];
-  const currentIdx = stages.findIndex(s => s.key === status);
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-      {stages.map((stage, idx) => (
-        <div key={stage.key} style={{ display: 'flex', alignItems: 'center' }}>
-          <div
-            title={timestamps && timestamps[stage.key.toLowerCase()] ?
-              `${new Date(timestamps[stage.key.toLowerCase()]).toLocaleString()}${stage.key === 'Classified' && confidence ? `\nConfidence: ${confidence}` : ''}` : ''}
-            style={{
-              width: 24, height: 24, borderRadius: '50%',
-              background: idx <= currentIdx ? '#4caf50' : '#ccc',
-              color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 'bold', fontSize: 14
-            }}
-          >
-            {idx + 1}
-          </div>
-          {idx < stages.length - 1 && <div style={{ width: 40, height: 4, background: idx < currentIdx ? '#4caf50' : '#ccc' }} />}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function App() {
-  const [documents, setDocuments] = useState([]);
-  const [selectedDoc, setSelectedDoc] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [file, setFile] = useState(null);
-  const [refresh, setRefresh] = useState(0);
+export default function App() {
+  const [currentPage, setCurrentPage] = useState('overview');
+  const [theme, setTheme] = useState('system');
 
   useEffect(() => {
-    fetch(API_URL)
-      .then(res => res.json())
-      .then(setDocuments);
-  }, [refresh]);
+    const root = document.documentElement;
 
-  const handleUpload = async (e) => {
-    e.preventDefault();
-    if (!file) return;
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('document', file);
-    await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
-    setUploading(false);
-    setFile(null);
-    setRefresh(r => r + 1);
+    if (theme === 'system') {
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        root.setAttribute('data-theme', 'dark');
+      } else {
+        root.setAttribute('data-theme', 'light');
+      }
+    } else {
+      root.setAttribute('data-theme', theme);
+    }
+  }, [theme]);
+
+  const pageVariants = {
+    initial: {
+      opacity: 0,
+      x: 100,
+      scale: 0.95
+    },
+    in: {
+      opacity: 1,
+      x: 0,
+      scale: 1
+    },
+    out: {
+      opacity: 0,
+      x: -100,
+      scale: 0.95
+    }
   };
 
-  const manualAction = async (id, action, body = {}) => {
-    await fetch(`${API_URL}/${id}/${action}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    setRefresh(r => r + 1);
+  const pageTransition = {
+    type: "tween",
+    ease: "anticipate",
+    duration: 0.6
+  };
+
+  const renderPage = () => {
+    const pages = {
+      'overview': <Dashboard />,
+      'ingest': <Ingest />,
+      'extract': <Extract />,
+      'classify': <Classify />,
+      'route': <Route />,
+      'analytics': <Analytics />,
+      'human': <HumanIntervention />
+    };
+
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentPage}
+          initial="initial"
+          animate="in"
+          exit="out"
+          variants={pageVariants}
+          transition={pageTransition}
+        >
+          {pages[currentPage] || <Dashboard />}
+        </motion.div>
+      </AnimatePresence>
+    );
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: '40px auto', fontFamily: 'sans-serif' }}>
-      <h1>Document Workflow Dashboard</h1>
-      {/* Upload Panel */}
-      <form onSubmit={handleUpload} style={{ marginBottom: 24 }}>
-        <input type="file" onChange={e => setFile(e.target.files[0])} />
-        <button type="submit" disabled={uploading || !file} style={{ marginLeft: 8 }}>
-          {uploading ? 'Uploading...' : 'Upload'}
-        </button>
-        <span style={{ marginLeft: 16, color: '#888' }}>[Mailbox connect coming soon]</span>
-      </form>
-      {/* Document Table */}
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 24 }}>
-        <thead>
-          <tr style={{ background: '#f0f0f0' }}>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Type</th>
-            <th>Last Updated</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {documents.map(doc => (
-            <React.Fragment key={doc.id}>
-              <tr
-                style={{ cursor: 'pointer', background: selectedDoc === doc.id ? '#e3f2fd' : '' }}
-                onClick={() => setSelectedDoc(selectedDoc === doc.id ? null : doc.id)}
-              >
-                <td>{doc.name}</td>
-                <td>{doc.status}</td>
-                <td>{doc.type || '-'}</td>
-                <td>{doc.timestamps && doc.timestamps.ingested ? new Date(doc.timestamps.ingested).toLocaleString() : '-'}</td>
-                <td>
-                  <button onClick={e => { e.stopPropagation(); manualAction(doc.id, 'extract', { filePath: doc.path }); }}>Re-extract</button>
-                  <button onClick={e => { e.stopPropagation(); manualAction(doc.id, 'classify', { extractedText: doc.entities || '' }); }}>Re-classify</button>
-                  <button onClick={e => { e.stopPropagation(); manualAction(doc.id, 'route', { type: doc.type || '' }); }}>Re-route</button>
-                </td>
-              </tr>
-              {selectedDoc === doc.id && (
-                <tr>
-                  <td colSpan={5} style={{ background: '#f9f9f9' }}>
-                    <div style={{ padding: 16 }}>
-                      <WorkflowTracker status={doc.status} timestamps={doc.timestamps} confidence={doc.confidence} />
-                      <div><b>Entities:</b> <pre>{JSON.stringify(doc.entities, null, 2)}</pre></div>
-                      <div><b>Metadata:</b> <pre>{JSON.stringify(doc, null, 2)}</pre></div>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <ThemeContext.Provider value={{ theme, setTheme }}>
+      <motion.div 
+        className="app"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+      >
+        <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+        <main className="main-content">
+          <motion.div 
+            className="header-bar"
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            <ThemeToggle />
+          </motion.div>
+          {renderPage()}
+        </main>
+      </motion.div>
+    </ThemeContext.Provider>
   );
 }
-
-export default App;
