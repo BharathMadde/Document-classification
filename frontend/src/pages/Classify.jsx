@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { uploadDocument, extractDocument, classifyDocument, listDocuments, getDocument } from '../api';
+import { uploadDocument, extractDocument, classifyDocument, listDocuments, getDocument, getSocket, initializeSocket } from '../api';
 
 const SUPPORTED_EXTENSIONS = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.gif'];
 function getFileExtension(filename) {
@@ -13,7 +13,8 @@ export default function Classify() {
   const [error, setError] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [autoClassifiedId, setAutoClassifiedId] = useState(null);
+  const [classificationResults, setClassificationResults] = useState([]);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const features = [
     {
@@ -46,22 +47,61 @@ export default function Classify() {
     try {
       const docs = await listDocuments();
       setDocuments(docs);
-    } catch (err) {}
+      
+      // Update classification results
+      const classified = docs.filter(doc => 
+        doc.status === 'Classified' || 
+        doc.status === 'Routed'
+      );
+      setClassificationResults(classified);
+    } catch (err) {
+      console.error('Failed to fetch documents:', err);
+    }
   };
 
   useEffect(() => {
     fetchDocuments();
-  }, []);
+    
+    // Initialize socket connection
+    const socket = initializeSocket();
+    
+    socket.on('documentUpdated', (document) => {
+      setDocuments(prev => {
+        const index = prev.findIndex(d => d.id === document.id);
+        if (index >= 0) {
+          const updated = [...prev];
+          updated[index] = document;
+          return updated;
+        } else {
+          return [document, ...prev];
+        }
+      });
+      
+      // Show success message for classification
+      if (document.status === 'Classified') {
+        setSuccessMessage(`Document "${document.name}" classified as "${document.type}" with ${Math.round(document.confidence * 100)}% confidence.`);
+        setTimeout(() => setSuccessMessage(null), 5000);
+      }
+      
+      // Update classification results
+      if (document.status === 'Classified' || document.status === 'Routed') {
+        setClassificationResults(prev => {
+          const index = prev.findIndex(d => d.id === document.id);
+          if (index >= 0) {
+            const updated = [...prev];
+            updated[index] = document;
+            return updated;
+          } else {
+            return [document, ...prev];
+          }
+        });
+      }
+    });
 
-  // Auto-classify the most recent 'Extracted' document
-  useEffect(() => {
-    const extractedDoc = documents.find(doc => doc.status === 'Extracted');
-    if (extractedDoc && extractedDoc.id !== autoClassifiedId) {
-      setAutoClassifiedId(extractedDoc.id);
-      handleAutoClassify(extractedDoc.id);
-    }
-    // eslint-disable-next-line
-  }, [documents]);
+    return () => {
+      socket.off('documentUpdated');
+    };
+  }, []);
 
   const handleAutoClassify = async (id) => {
     setError(null);
@@ -200,14 +240,57 @@ export default function Classify() {
         <div className="recent-header">
           <h2 className="section-title">Classification Results</h2>
           <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Documents classified with AI confidence scores
+            Real-time AI classification results with confidence scores
           </span>
         </div>
-        <div className="empty-state">
-          <div className="empty-icon">🏷️</div>
-          <div className="empty-title">No classification results yet</div>
-          <div className="empty-description">Upload documents to see AI classification results</div>
-        </div>
+        {successMessage && (
+          <div style={{ 
+            padding: '12px', 
+            background: 'rgba(34, 197, 94, 0.1)', 
+            color: 'rgb(34, 197, 94)',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            fontWeight: 500
+          }}>
+            {successMessage}
+          </div>
+        )}
+        {classificationResults.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">🏷️</div>
+            <div className="empty-title">No classification results yet</div>
+            <div className="empty-description">Documents will appear here automatically as they are classified</div>
+          </div>
+        ) : (
+          <div className="classification-results">
+            {classificationResults.map(doc => (
+              <div key={doc.id} className="classification-result-card">
+                <div className="classification-header">
+                  <h3>{doc.name}</h3>
+                  <span className={`status-badge status-${doc.status.toLowerCase().replace(' ', '-')}`}>
+                    {doc.status}
+                  </span>
+                </div>
+                <div className="classification-details">
+                  <div className="classification-meta">
+                    <span>Classified: {doc.timestamps?.classified ? new Date(doc.timestamps.classified).toLocaleString() : 'Processing...'}</span>
+                    {doc.destination && <span>Routed to: {doc.destination}</span>}
+                  </div>
+                  <div className="classification-type">
+                    <div className="type-badge">
+                      <span className="type-label">Document Type</span>
+                      <span className="type-value">{doc.type}</span>
+                    </div>
+                    <div className="confidence-badge">
+                      <span className="confidence-label">Confidence</span>
+                      <span className="confidence-value">{Math.round(doc.confidence * 100)}%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="pipeline-section">

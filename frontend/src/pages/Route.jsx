@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { uploadDocument, extractDocument, classifyDocument, routeDocument, listDocuments, getDocument } from '../api';
+import { uploadDocument, extractDocument, classifyDocument, routeDocument, listDocuments, getDocument, getSocket, initializeSocket } from '../api';
 
 const SUPPORTED_EXTENSIONS = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.gif'];
 function getFileExtension(filename) {
@@ -13,28 +13,65 @@ export default function Route() {
   const [error, setError] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [autoRoutedId, setAutoRoutedId] = useState(null);
+  const [routingResults, setRoutingResults] = useState([]);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const fetchDocuments = async () => {
     try {
       const docs = await listDocuments();
       setDocuments(docs);
-    } catch (err) {}
+      
+      // Update routing results
+      const routed = docs.filter(doc => doc.status === 'Routed');
+      setRoutingResults(routed);
+    } catch (err) {
+      console.error('Failed to fetch documents:', err);
+    }
   };
 
   useEffect(() => {
     fetchDocuments();
-  }, []);
+    
+    // Initialize socket connection
+    const socket = initializeSocket();
+    
+    socket.on('documentUpdated', (document) => {
+      setDocuments(prev => {
+        const index = prev.findIndex(d => d.id === document.id);
+        if (index >= 0) {
+          const updated = [...prev];
+          updated[index] = document;
+          return updated;
+        } else {
+          return [document, ...prev];
+        }
+      });
+      
+      // Show success message for routing
+      if (document.status === 'Routed') {
+        setSuccessMessage(`Document "${document.name}" successfully routed to ${document.destination}.`);
+        setTimeout(() => setSuccessMessage(null), 5000);
+      }
+      
+      // Update routing results
+      if (document.status === 'Routed') {
+        setRoutingResults(prev => {
+          const index = prev.findIndex(d => d.id === document.id);
+          if (index >= 0) {
+            const updated = [...prev];
+            updated[index] = document;
+            return updated;
+          } else {
+            return [document, ...prev];
+          }
+        });
+      }
+    });
 
-  // Auto-route the most recent 'Classified' document
-  useEffect(() => {
-    const classifiedDoc = documents.find(doc => doc.status === 'Classified');
-    if (classifiedDoc && classifiedDoc.id !== autoRoutedId) {
-      setAutoRoutedId(classifiedDoc.id);
-      handleAutoRoute(classifiedDoc.id);
-    }
-    // eslint-disable-next-line
-  }, [documents]);
+    return () => {
+      socket.off('documentUpdated');
+    };
+  }, []);
 
   const handleAutoRoute = async (id) => {
     setError(null);
@@ -201,14 +238,73 @@ export default function Route() {
         <div className="recent-header">
           <h2 className="section-title">Routing History</h2>
           <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Track document routing decisions and destinations
+            Real-time tracking of document routing decisions and destinations
           </span>
         </div>
-        <div className="empty-state">
-          <div className="empty-icon">🚀</div>
-          <div className="empty-title">No routing history yet</div>
-          <div className="empty-description">Upload documents to see AI routing results</div>
-        </div>
+        {successMessage && (
+          <div style={{ 
+            padding: '12px', 
+            background: 'rgba(34, 197, 94, 0.1)', 
+            color: 'rgb(34, 197, 94)',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            fontWeight: 500
+          }}>
+            {successMessage}
+          </div>
+        )}
+        {routingResults.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">🚀</div>
+            <div className="empty-title">No routing history yet</div>
+            <div className="empty-description">Documents will appear here automatically as they are routed</div>
+          </div>
+        ) : (
+          <div className="routing-results">
+            {routingResults.map(doc => (
+              <div key={doc.id} className="routing-result-card">
+                <div className="routing-header">
+                  <h3>{doc.name}</h3>
+                  <span className="destination-badge">
+                    🚀 {doc.destination}
+                  </span>
+                </div>
+                <div className="routing-details">
+                  <div className="routing-meta">
+                    <span>Routed: {doc.timestamps?.routed ? new Date(doc.timestamps.routed).toLocaleString() : 'Processing...'}</span>
+                    <span>Type: {doc.type}</span>
+                    <span>Confidence: {Math.round(doc.confidence * 100)}%</span>
+                  </div>
+                  <div className="routing-journey">
+                    <div className="journey-step completed">
+                      <span className="step-icon">📤</span>
+                      <span className="step-label">Ingested</span>
+                      <span className="step-time">{doc.timestamps?.ingested ? new Date(doc.timestamps.ingested).toLocaleTime() : ''}</span>
+                    </div>
+                    <div className="journey-arrow">→</div>
+                    <div className="journey-step completed">
+                      <span className="step-icon">🔍</span>
+                      <span className="step-label">Extracted</span>
+                      <span className="step-time">{doc.timestamps?.extracted ? new Date(doc.timestamps.extracted).toLocaleTime() : ''}</span>
+                    </div>
+                    <div className="journey-arrow">→</div>
+                    <div className="journey-step completed">
+                      <span className="step-icon">🏷️</span>
+                      <span className="step-label">Classified</span>
+                      <span className="step-time">{doc.timestamps?.classified ? new Date(doc.timestamps.classified).toLocaleTime() : ''}</span>
+                    </div>
+                    <div className="journey-arrow">→</div>
+                    <div className="journey-step completed">
+                      <span className="step-icon">🚀</span>
+                      <span className="step-label">Routed</span>
+                      <span className="step-time">{doc.timestamps?.routed ? new Date(doc.timestamps.routed).toLocaleTime() : ''}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="pipeline-section">

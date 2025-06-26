@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { uploadDocument, extractDocument, listDocuments } from '../api';
+import { uploadDocument, extractDocument, listDocuments, getSocket, initializeSocket } from '../api';
 
 const SUPPORTED_EXTENSIONS = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.gif'];
 function getFileExtension(filename) {
@@ -13,51 +13,82 @@ export default function Extract() {
   const [error, setError] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [autoExtractedId, setAutoExtractedId] = useState(null);
+  const [extractionResults, setExtractionResults] = useState([]);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const fetchDocuments = async () => {
     try {
       const docs = await listDocuments();
       setDocuments(docs);
-    } catch (err) {}
+      
+      // Update extraction results
+      const extracted = docs.filter(doc => 
+        doc.status === 'Extracted' || 
+        doc.status === 'Classified' || 
+        doc.status === 'Routed'
+      );
+      setExtractionResults(extracted);
+    } catch (err) {
+      console.error('Failed to fetch documents:', err);
+    }
   };
 
   useEffect(() => {
     fetchDocuments();
+    
+    // Initialize socket connection
+    const socket = initializeSocket();
+    
+    socket.on('documentUpdated', (document) => {
+      setDocuments(prev => {
+        const index = prev.findIndex(d => d.id === document.id);
+        if (index >= 0) {
+          const updated = [...prev];
+          updated[index] = document;
+          return updated;
+        } else {
+          return [document, ...prev];
+        }
+      });
+      
+      // Show success message for extraction
+      if (document.status === 'Extracted') {
+        setSuccessMessage(`Text extraction completed for "${document.name}". Processing continues automatically.`);
+        setTimeout(() => setSuccessMessage(null), 5000);
+      }
+      
+      // Update extraction results
+      if (document.status === 'Extracted' || document.status === 'Classified' || document.status === 'Routed') {
+        setExtractionResults(prev => {
+          const index = prev.findIndex(d => d.id === document.id);
+          if (index >= 0) {
+            const updated = [...prev];
+            updated[index] = document;
+            return updated;
+          } else {
+            return [document, ...prev];
+          }
+        });
+      }
+    });
+
+    return () => {
+      socket.off('documentUpdated');
+    };
   }, []);
-
-  // Auto-extract the most recent 'Ingested' document
-  useEffect(() => {
-    const ingestedDoc = documents.find(doc => doc.status === 'Ingested');
-    if (ingestedDoc && ingestedDoc.id !== autoExtractedId) {
-      setAutoExtractedId(ingestedDoc.id);
-      handleAutoExtract(ingestedDoc.id);
-    }
-    // eslint-disable-next-line
-  }, [documents]);
-
-  const handleAutoExtract = async (id) => {
-    setError(null);
-    setResult(null);
-    try {
-      const res = await extractDocument(id);
-      setResult(res);
-      await fetchDocuments();
-    } catch (err) {
-      setError(err.message);
-      // Simulate status update to 'Human Intervention' in frontend
-      setDocuments(prev => prev.map(doc => doc.id === id ? { ...doc, status: 'Human Intervention' } : doc));
-    }
-  };
 
   const handleExtract = async () => {
     if (!selectedId) return;
     setIsExtracting(true);
     setError(null);
     setResult(null);
+    setSuccessMessage(null);
     try {
       const res = await extractDocument(selectedId);
-      setResult(res);
+      if (res.success) {
+        setSuccessMessage('Text extraction initiated successfully! Results will update automatically.');
+        setResult(res);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -196,14 +227,67 @@ export default function Extract() {
         <div className="recent-header">
           <h2 className="section-title">Extraction Results</h2>
           <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            View and download extracted data from processed documents
+            Real-time view of extracted data from processed documents
           </span>
         </div>
-        <div className="empty-state">
-          <div className="empty-icon">📄</div>
-          <div className="empty-title">No extraction results yet</div>
-          <div className="empty-description">Upload documents to see AI extraction results</div>
-        </div>
+        {successMessage && (
+          <div style={{ 
+            padding: '12px', 
+            background: 'rgba(34, 197, 94, 0.1)', 
+            color: 'rgb(34, 197, 94)',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            fontWeight: 500
+          }}>
+            {successMessage}
+          </div>
+        )}
+        {extractionResults.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📄</div>
+            <div className="empty-title">No extraction results yet</div>
+            <div className="empty-description">Documents will appear here automatically as they are extracted</div>
+          </div>
+        ) : (
+          <div className="extraction-results">
+            {extractionResults.map(doc => (
+              <div key={doc.id} className="extraction-result-card">
+                <div className="extraction-header">
+                  <h3>{doc.name}</h3>
+                  <span className={`status-badge status-${doc.status.toLowerCase().replace(' ', '-')}`}>
+                    {doc.status}
+                  </span>
+                </div>
+                <div className="extraction-details">
+                  <div className="extraction-meta">
+                    <span>Extracted: {doc.timestamps?.extracted ? new Date(doc.timestamps.extracted).toLocaleString() : 'Processing...'}</span>
+                    {doc.type && <span>Type: {doc.type}</span>}
+                    {doc.confidence && <span>Confidence: {Math.round(doc.confidence * 100)}%</span>}
+                  </div>
+                  {doc.entities?.text && (
+                    <div className="extracted-text">
+                      <strong>Extracted Text (Preview):</strong>
+                      <p>{doc.entities.text.substring(0, 200)}...</p>
+                    </div>
+                  )}
+                  {doc.entities && Object.keys(doc.entities).length > 1 && (
+                    <div className="extracted-entities">
+                      <strong>Extracted Entities:</strong>
+                      <div className="entities-grid">
+                        {Object.entries(doc.entities).filter(([key]) => key !== 'text').map(([key, value]) => (
+                          <div key={key} className="entity-item">
+                            <span className="entity-key">{key.replace('_', ' ')}:</span>
+                            <span className="entity-value">{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
