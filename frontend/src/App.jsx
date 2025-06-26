@@ -1,130 +1,67 @@
-// React dashboard UI
+import React, { useState } from 'react';
+import { Routes, Route, useLocation, Navigate, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+import Login from './components/Login/Login';
+import Dashboard from './components/Dashboard/Dashboard';
+import Admin from './components/Admin/Admin';
+import ThemeToggle from './components/ThemeToggle';
 
-import React, { useEffect, useState } from 'react';
-
-const API_URL = 'http://localhost:3000/api/documents';
-
-function WorkflowTracker({ status, timestamps, confidence }) {
-  const stages = [
-    { key: 'Ingested', label: 'Ingested' },
-    { key: 'Extracted', label: 'Extracted' },
-    { key: 'Classified', label: 'Classified' },
-    { key: 'Routed', label: 'Routed' },
-  ];
-  const currentIdx = stages.findIndex(s => s.key === status);
+function Landing({ onLogin }) {
+  const navigate = useNavigate();
   return (
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-      {stages.map((stage, idx) => (
-        <div key={stage.key} style={{ display: 'flex', alignItems: 'center' }}>
-          <div
-            title={timestamps && timestamps[stage.key.toLowerCase()] ?
-              `${new Date(timestamps[stage.key.toLowerCase()]).toLocaleString()}${stage.key === 'Classified' && confidence ? `\nConfidence: ${confidence}` : ''}` : ''}
-            style={{
-              width: 24, height: 24, borderRadius: '50%',
-              background: idx <= currentIdx ? '#4caf50' : '#ccc',
-              color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 'bold', fontSize: 14
-            }}
-          >
-            {idx + 1}
-          </div>
-          {idx < stages.length - 1 && <div style={{ width: 40, height: 4, background: idx < currentIdx ? '#4caf50' : '#ccc' }} />}
-        </div>
-      ))}
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #3B82F6 0%, #9333EA 100%)' }}>
+      <div style={{ background: 'rgba(255,255,255,0.7)', borderRadius: 24, padding: '2.5rem 2.5rem 2rem 2.5rem', boxShadow: '0 8px 32px 0 rgba(31,41,55,0.15)', maxWidth: 480, textAlign: 'center' }}>
+        <h1 style={{ color: '#3B82F6', fontWeight: 700, marginBottom: 16 }}>AI-Powered Document Classification</h1>
+        <p style={{ color: '#1F2937', fontSize: 18, marginBottom: 24 }}>
+          Instantly ingest, extract, classify, and route your enterprise documents with a futuristic, automated workflow.<br /><br />
+          Experience glassmorphism, smooth animations, and a modern dashboard for all your document needs.
+        </p>
+        <button onClick={() => navigate('/login')} style={{ background: 'linear-gradient(90deg, #3B82F6 0%, #9333EA 100%)', color: '#fff', border: 'none', borderRadius: 12, padding: '0.9rem 2.5rem', fontSize: 18, fontWeight: 600, cursor: 'pointer', marginRight: 12 }}>Login</button>
+        <button onClick={() => alert('Registration coming soon!')} style={{ background: '#fff', color: '#3B82F6', border: '1.5px solid #3B82F6', borderRadius: 12, padding: '0.9rem 2.5rem', fontSize: 18, fontWeight: 600, cursor: 'pointer' }}>Register</button>
+      </div>
+    </motion.div>
+  );
+}
+
+export default function App({ theme, setTheme }) {
+  const [isAuth, setIsAuth] = useState(() => localStorage.getItem('isAuth') === 'true');
+  const location = useLocation();
+
+  function handleLogin({ username, password }) {
+    if (username === 'Admin' && password === 'b') {
+      setIsAuth(true);
+      localStorage.setItem('isAuth', 'true');
+      return true;
+    }
+    return false;
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'none', position: 'relative' }}>
+      <ThemeToggle theme={theme} setTheme={setTheme} />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<PageFade><Login onLogin={handleLogin} /></PageFade>} />
+          <Route path="/dashboard" element={isAuth ? <PageFade><Dashboard /></PageFade> : <Navigate to="/login" />} />
+          <Route path="/admin" element={isAuth ? <PageFade><Admin /></PageFade> : <Navigate to="/login" />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </AnimatePresence>
     </div>
   );
 }
 
-function App() {
-  const [documents, setDocuments] = useState([]);
-  const [selectedDoc, setSelectedDoc] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [file, setFile] = useState(null);
-  const [refresh, setRefresh] = useState(0);
-
-  useEffect(() => {
-    fetch(API_URL)
-      .then(res => res.json())
-      .then(setDocuments);
-  }, [refresh]);
-
-  const handleUpload = async (e) => {
-    e.preventDefault();
-    if (!file) return;
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('document', file);
-    await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
-    setUploading(false);
-    setFile(null);
-    setRefresh(r => r + 1);
-  };
-
-  const manualAction = async (id, action, body = {}) => {
-    await fetch(`${API_URL}/${id}/${action}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    setRefresh(r => r + 1);
-  };
-
+function PageFade({ children }) {
   return (
-    <div style={{ maxWidth: 900, margin: '40px auto', fontFamily: 'sans-serif' }}>
-      <h1>Document Workflow Dashboard</h1>
-      {/* Upload Panel */}
-      <form onSubmit={handleUpload} style={{ marginBottom: 24 }}>
-        <input type="file" onChange={e => setFile(e.target.files[0])} />
-        <button type="submit" disabled={uploading || !file} style={{ marginLeft: 8 }}>
-          {uploading ? 'Uploading...' : 'Upload'}
-        </button>
-        <span style={{ marginLeft: 16, color: '#888' }}>[Mailbox connect coming soon]</span>
-      </form>
-      {/* Document Table */}
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 24 }}>
-        <thead>
-          <tr style={{ background: '#f0f0f0' }}>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Type</th>
-            <th>Last Updated</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {documents.map(doc => (
-            <React.Fragment key={doc.id}>
-              <tr
-                style={{ cursor: 'pointer', background: selectedDoc === doc.id ? '#e3f2fd' : '' }}
-                onClick={() => setSelectedDoc(selectedDoc === doc.id ? null : doc.id)}
-              >
-                <td>{doc.name}</td>
-                <td>{doc.status}</td>
-                <td>{doc.type || '-'}</td>
-                <td>{doc.timestamps && doc.timestamps.ingested ? new Date(doc.timestamps.ingested).toLocaleString() : '-'}</td>
-                <td>
-                  <button onClick={e => { e.stopPropagation(); manualAction(doc.id, 'extract', { filePath: doc.path }); }}>Re-extract</button>
-                  <button onClick={e => { e.stopPropagation(); manualAction(doc.id, 'classify', { extractedText: doc.entities || '' }); }}>Re-classify</button>
-                  <button onClick={e => { e.stopPropagation(); manualAction(doc.id, 'route', { type: doc.type || '' }); }}>Re-route</button>
-                </td>
-              </tr>
-              {selectedDoc === doc.id && (
-                <tr>
-                  <td colSpan={5} style={{ background: '#f9f9f9' }}>
-                    <div style={{ padding: 16 }}>
-                      <WorkflowTracker status={doc.status} timestamps={doc.timestamps} confidence={doc.confidence} />
-                      <div><b>Entities:</b> <pre>{JSON.stringify(doc.entities, null, 2)}</pre></div>
-                      <div><b>Metadata:</b> <pre>{JSON.stringify(doc, null, 2)}</pre></div>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -24 }}
+      transition={{ duration: 0.5, ease: 'easeInOut' }}
+      style={{ minHeight: '100vh' }}
+    >
+      {children}
+    </motion.div>
   );
 }
-
-export default App;
