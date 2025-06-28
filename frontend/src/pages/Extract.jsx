@@ -17,9 +17,19 @@ export default function Extract() {
 
   const fetchDocuments = async () => {
     try {
-      const docs = await listDocuments();
-      setDocuments(docs);
-    } catch (err) {}
+      const response = await listDocuments();
+      // Handle the response structure from backend
+      if (response.success && Array.isArray(response.documents)) {
+        setDocuments(response.documents);
+      } else if (Array.isArray(response)) {
+        // Fallback: if response is directly an array
+        setDocuments(response);
+      } else {
+        setDocuments([]);
+      }
+    } catch (err) {
+      setDocuments([]);
+    }
   };
 
   useEffect(() => {

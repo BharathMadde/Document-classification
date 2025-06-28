@@ -43,10 +43,18 @@ export default function Ingest() {
 
   const fetchDocuments = async () => {
     try {
-      const docs = await listDocuments();
-      setDocuments(docs);
+      const response = await listDocuments();
+      // Handle the response structure from backend
+      if (response.success && Array.isArray(response.documents)) {
+        setDocuments(response.documents);
+      } else if (Array.isArray(response)) {
+        // Fallback: if response is directly an array
+        setDocuments(response);
+      } else {
+        setDocuments([]);
+      }
     } catch (err) {
-      // Optionally handle error
+      setDocuments([]);
     }
   };
 
@@ -69,6 +77,24 @@ export default function Ingest() {
         await uploadDocument(file);
         setSuccess('Document ingested successfully!');
         await fetchDocuments();
+        // After successful upload, start polling for document status
+        const pollForStatus = (docId, onUpdate, onDone) => {
+          let attempts = 0;
+          const interval = setInterval(async () => {
+            attempts++;
+            const res = await listDocuments();
+            const doc = (res.documents || []).find(d => d.id === docId);
+            if (doc && doc.status === 'Routed') {
+              onUpdate(doc);
+              clearInterval(interval);
+              if (onDone) onDone(doc);
+            } else if (attempts >= 6) { // 12 seconds max
+              clearInterval(interval);
+              if (onDone) onDone(doc);
+            }
+          }, 2000);
+        };
+        // pollForStatus(newDocId, setDoc, showNotification);
       } catch (err) {
         setError(err.message);
       } finally {

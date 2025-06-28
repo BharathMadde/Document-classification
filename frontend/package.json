@@ -21,6 +21,8 @@
     "vite": "^5.0.0"
   },
   "dependencies": {
-    "framer-motion": "^12.19.1"
+    "framer-motion": "^12.19.1",
+    "lucide-react": "^0.525.0",
+    "styled-components": "^6.1.19"
   }
 }

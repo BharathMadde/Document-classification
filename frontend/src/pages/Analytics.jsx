@@ -6,7 +6,23 @@ export default function Analytics() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    listDocuments().then(setDocuments).catch(err => setError(err.message));
+    listDocuments()
+      .then(response => {
+        // Handle the response structure from backend
+        if (response.success && Array.isArray(response.documents)) {
+          setDocuments(response.documents);
+        } else if (Array.isArray(response)) {
+          // Fallback: if response is directly an array
+          setDocuments(response);
+        } else {
+          setDocuments([]);
+          setError('Invalid response format from server');
+        }
+      })
+      .catch(err => {
+        setError(err.message);
+        setDocuments([]);
+      });
   }, []);
 
   // Example analytics calculations

@@ -1,80 +1,35 @@
+import React from 'react';
+import styled from 'styled-components';
+import { Sun, Moon } from 'lucide-react';
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from '../App';
+const ToggleBtn = styled.button`
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1000;
+  background: ${({ theme }) => theme.card};
+  border: none;
+  border-radius: 50%;
+  box-shadow: ${({ theme }) => theme.shadow};
+  padding: 0.7rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &:hover {
+    background: ${({ theme }) => theme.glass};
+    transform: scale(1.1);
+  }
+`;
 
-export default function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const [isOpen, setIsOpen] = useState(false);
-
-  const themes = [
-    { id: 'light', label: 'Light', icon: '☀️' },
-    { id: 'dark', label: 'Dark', icon: '🌙' },
-    { id: 'system', label: 'System', icon: '💻' },
-  ];
-
-  const currentTheme = themes.find(t => t.id === theme) || themes[0];
-
-  const dropdownVariants = {
-    hidden: {
-      opacity: 0,
-      scale: 0.95,
-      y: -10,
-      transition: {
-        duration: 0.2
-      }
-    },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      y: 0,
-      transition: {
-        duration: 0.2,
-        ease: "easeOut"
-      }
-    }
-  };
-
-  const handleThemeChange = (themeId) => {
-    setTheme(themeId);
-    setIsOpen(false);
-  };
-
+export default function ThemeToggle({ theme, setTheme }) {
   return (
-    <div className="theme-toggle">
-      <motion.button
-        className="theme-button"
-        onClick={() => setIsOpen(!isOpen)}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <span style={{ fontSize: '1rem' }}>{currentTheme.icon}</span>
-        <span style={{ fontSize: '0.75rem' }}>▼</span>
-      </motion.button>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            className="theme-dropdown"
-            variants={dropdownVariants}
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-          >
-            {themes.map((themeOption) => (
-              <motion.button
-                key={themeOption.id}
-                className={`theme-option ${theme === themeOption.id ? 'active' : ''}`}
-                onClick={() => handleThemeChange(themeOption.id)}
-                whileHover={{ x: 4 }}
-              >
-                <span>{themeOption.icon}</span>
-                <span>{themeOption.label}</span>
-              </motion.button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <ToggleBtn 
+      onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} 
+      title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+    >
+      {theme === 'light' ? <Moon size={22} /> : <Sun size={22} />}
+    </ToggleBtn>
   );
 }

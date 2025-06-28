@@ -1,12 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { listDocuments } from '../api';
+import { BarChart2 } from 'lucide-react';
 
 export default function Dashboard() {
   const [documents, setDocuments] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    listDocuments().then(setDocuments).catch(err => setError(err.message));
+    listDocuments()
+      .then(response => {
+        // Handle the response structure from backend
+        if (response.success && Array.isArray(response.documents)) {
+          setDocuments(response.documents);
+        } else if (Array.isArray(response)) {
+          // Fallback: if response is directly an array
+          setDocuments(response);
+        } else {
+          setDocuments([]);
+          setError('Invalid response format from server');
+        }
+      })
+      .catch(err => {
+        setError(err.message);
+        setDocuments([]);
+      });
   }, []);
 
   const stats = [
@@ -20,7 +37,7 @@ export default function Dashboard() {
     <div className="page-container">
       <div className="dashboard-header">
         <h1 className="dashboard-title">
-          <span style={{ marginRight: '12px' }}>📊</span>
+          <span style={{ marginRight: '12px', verticalAlign: 'middle' }}><BarChart2 size={32} color="#3b82f6" /></span>
           Document Dashboard
         </h1>
         <p className="dashboard-subtitle">
@@ -41,24 +58,24 @@ export default function Dashboard() {
           <h2 className="section-title">Recent Documents</h2>
         </div>
         {error && <div style={{ color: 'red' }}>{error}</div>}
-        <table style={{ width: '100%', marginTop: 16 }}>
+        <table style={{ width: '100%', marginTop: 16, borderCollapse: 'collapse' }}>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Status</th>
-              <th>Type</th>
-              <th>Confidence</th>
-              <th>Destination</th>
+              <th style={{ textAlign: 'center', padding: '8px' }}>Name</th>
+              <th style={{ textAlign: 'center', padding: '8px' }}>Status</th>
+              <th style={{ textAlign: 'center', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'center', padding: '8px' }}>Confidence</th>
+              <th style={{ textAlign: 'center', padding: '8px' }}>Destination</th>
             </tr>
           </thead>
           <tbody>
             {documents.map(doc => (
               <tr key={doc.id}>
-                <td>{doc.name}</td>
-                <td>{doc.status}</td>
-                <td>{doc.type || '-'}</td>
-                <td>{doc.confidence || '-'}</td>
-                <td>{doc.destination || '-'}</td>
+                <td style={{ textAlign: 'center', padding: '8px', verticalAlign: 'middle' }}>{doc.name}</td>
+                <td style={{ textAlign: 'center', padding: '8px', verticalAlign: 'middle' }}>{doc.status}</td>
+                <td style={{ textAlign: 'center', padding: '8px', verticalAlign: 'middle' }}>{doc.type || '-'}</td>
+                <td style={{ textAlign: 'center', padding: '8px', verticalAlign: 'middle' }}>{doc.confidence || '-'}</td>
+                <td style={{ textAlign: 'center', padding: '8px', verticalAlign: 'middle' }}>{doc.destination || '-'}</td>
               </tr>
             ))}
           </tbody>
