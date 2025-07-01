@@ -1,1 +1,21 @@
-node_modules/ 
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+.idea/
+uploaded_docs/
+.DS_Store
+*.log
+*.tmp
+.env
+# Ignore build and cache folders
+frontend/dist/
+frontend/.vite/
+frontend/.cache/
+# Ignore extracted or temporary files
+*.bak
+*.swp
+*.swo
+# Ignore system files
+Thumbs.db
+# Ignore test output
+*.test-output/ 
