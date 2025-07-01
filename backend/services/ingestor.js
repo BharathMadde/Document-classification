@@ -106,6 +106,7 @@ exports.uploadDocument = async (req, res) => {
       id,
       name: doc.name,
       path: docPath,
+      filePath: docPath,
       status: "Ingested",
       type: null,
       confidence: null,
@@ -135,6 +136,110 @@ exports.uploadDocument = async (req, res) => {
     
     // Trigger full workflow after response
     processDocumentWorkflow(id);
+  });
+};
+
+// Upload multiple documents
+exports.uploadMultipleDocuments = async (req, res) => {
+  if (!req.files || !req.files.documents) {
+    return res.status(400).json({
+      success: false,
+      error: "No documents uploaded",
+      userMessage: "❌ Please select files to upload.",
+    });
+  }
+
+  const files = Array.isArray(req.files.documents) ? req.files.documents : [req.files.documents];
+  const results = [];
+  const errors = [];
+
+  for (const doc of files) {
+    try {
+      const fileName = doc.name || "";
+      const lastDotIndex = fileName.lastIndexOf(".");
+      const ext = lastDotIndex > 0 ? fileName.slice(lastDotIndex).toLowerCase() : "";
+      
+      console.log("Processing file:", fileName, "Extension:", ext);
+      
+      if (!SUPPORTED_EXTENSIONS.includes(ext)) {
+        errors.push({
+          fileName,
+          error: `Unsupported file type: ${ext}`
+        });
+        continue;
+      }
+
+      if (doc.size > 20 * 1024 * 1024) {
+        errors.push({
+          fileName,
+          error: "File size exceeds 20MB limit"
+        });
+        continue;
+      }
+
+      const id = uuidv4();
+      const docPath = path.join(uploadDir, `${id}_${doc.name}`);
+
+      await new Promise((resolve, reject) => {
+        doc.mv(docPath, (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+
+      // Save metadata and initial status
+      const metadata = {
+        id,
+        name: doc.name,
+        path: docPath,
+        filePath: docPath,
+        status: "Ingested",
+        type: null,
+        confidence: null,
+        entities: null,
+        timestamps: { ingested: new Date().toISOString() },
+        messages: {
+          ingest: `✅ "${doc.name}" uploaded and ready for processing!`,
+          extract: "⏳ Waiting for extraction...",
+          classify: "⏳ Waiting for classification...",
+          route: "⏳ Waiting for routing...",
+        },
+      };
+      documents.push(metadata);
+
+      results.push({
+        id,
+        fileName: doc.name,
+        fileSize: `${(doc.size / 1024).toFixed(1)} KB`,
+        status: "Uploaded successfully"
+      });
+
+      // Trigger full workflow after saving
+      processDocumentWorkflow(id);
+
+    } catch (err) {
+      console.error(`Error processing ${doc.name}:`, err);
+      errors.push({
+        fileName: doc.name,
+        error: err.message
+      });
+    }
+  }
+
+  res.json({
+    success: true,
+    message: `Processed ${files.length} files`,
+    results,
+    errors,
+    userMessage: `✅ ${results.length} file(s) uploaded successfully${errors.length > 0 ? `, ${errors.length} failed` : ''}!`,
+    summary: {
+      totalFiles: files.length,
+      successful: results.length,
+      failed: errors.length
+    }
   });
 };
 

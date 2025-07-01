@@ -1,0 +1,62 @@
+TRAVEL EXPENSE REPORT
+
+Employee Name: John Smith
+Employee ID: EMP-2024-001
+Department: Sales
+Trip Purpose: Client Meeting - New York
+Trip Dates: December 15-17, 2024
+
+EXPENSE BREAKDOWN
+
+TRANSPORTATION
+- Airfare (Round Trip): $450.00
+- Airport Parking: $45.00
+- Taxi to Hotel: $35.00
+- Taxi to Airport: $40.00
+- Subway Pass: $15.00
+Transportation Total: $585.00
+
+ACCOMMODATION
+- Hotel (2 nights): $320.00
+- Hotel Tax: $32.00
+Accommodation Total: $352.00
+
+MEALS
+- Day 1 Breakfast: $18.50
+- Day 1 Lunch: $24.75
+- Day 1 Dinner: $45.00
+- Day 2 Breakfast: $16.25
+- Day 2 Lunch: $28.50
+- Day 2 Dinner: $52.00
+- Day 3 Breakfast: $19.75
+Meals Total: $204.75
+
+OTHER EXPENSES
+- Business Supplies: $12.50
+- Internet Access: $15.00
+- Tips: $20.00
+Other Total: $47.50
+
+TOTAL EXPENSES: $1,189.25
+
+RECEIPTS ATTACHED: Yes
+All receipts are attached and properly categorized.
+
+APPROVAL STATUS
+- Submitted by: John Smith
+- Submitted Date: December 18, 2024
+- Approved by: Sarah Johnson (Manager)
+- Approval Date: December 19, 2024
+- Reimbursement Status: Processed
+
+NOTES
+- All expenses are within company policy limits
+- Receipts are clear and legible
+- Trip objectives were successfully achieved
+- Client meeting resulted in new contract worth $50,000
+
+REIMBURSEMENT DETAILS
+- Amount Reimbursed: $1,189.25
+- Payment Method: Direct Deposit
+- Payment Date: December 20, 2024
+- Reference Number: REIM-2024-001 

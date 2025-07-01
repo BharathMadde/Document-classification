@@ -1,0 +1,99 @@
+MIXED CONTENT DOCUMENT
+File: mixed_content_2024.txt
+Created: December 20, 2024
+Classification Status: Unclassified
+
+This document contains various types of content that make classification difficult:
+
+TEXT CONTENT:
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+NUMERICAL DATA:
+123.45
+678.90
+111.11
+999.99
+
+MATHEMATICAL EXPRESSIONS:
+2 + 2 = 4
+10 * 5 = 50
+100 / 4 = 25
+√16 = 4
+
+CODE SNIPPETS:
+function calculateTotal(items) {
+    return items.reduce((sum, item) => sum + item.price, 0);
+}
+
+HTML FRAGMENTS:
+<div class="container">
+    <h1>Sample Title</h1>
+    <p>Sample paragraph</p>
+</div>
+
+JSON DATA:
+{
+    "name": "John Doe",
+    "age": 30,
+    "city": "New York"
+}
+
+EMAIL ADDRESSES:
+john.doe@example.com
+jane.smith@company.com
+contact@business.org
+
+PHONE NUMBERS:
++1-555-123-4567
+(555) 987-6543
+555.456.7890
+
+URLS:
+https://www.example.com
+http://localhost:3000
+ftp://files.example.org
+
+SPECIAL CHARACTERS:
+!@#$%^&*()_+-=[]{}|;':",./<>?
+
+CURRENCY AMOUNTS:
+$1,234.56
+€987.65
+£543.21
+¥123,456
+
+DATES:
+2024-12-20
+12/20/2024
+December 20, 2024
+20-Dec-2024
+
+TIMES:
+14:30:25
+2:30 PM
+14:30
+02:30:25 PM
+
+PERCENTAGES:
+25%
+50.5%
+100%
+0.1%
+
+MEASUREMENTS:
+10.5 cm
+25.4 inches
+100 kg
+220 lbs
+
+This document demonstrates the challenges of automated classification when dealing with mixed content types that don't follow standard document patterns.
+
+CLASSIFICATION CHALLENGES:
+- Multiple content types in single document
+- No clear document structure
+- Mixed languages and formats
+- Inconsistent formatting
+- Lack of clear purpose or context
+
+PROCESSING RECOMMENDATION:
+Manual review required for proper classification and routing. 

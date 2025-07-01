@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { uploadDocument, extractDocument, listDocuments } from "../api";
+import { uploadDocument, extractDocument, listDocuments, uploadAndExtractDocument } from "../api";
 
 const SUPPORTED_EXTENSIONS = [
   ".pdf",
@@ -98,11 +98,8 @@ export default function Extract() {
       setResult(null);
       setIsExtracting(true);
       try {
-        const uploadRes = await uploadDocument(file);
-        const id = uploadRes.id;
-        const extractRes = await extractDocument(id);
+        const extractRes = await uploadAndExtractDocument(file);
         setResult(extractRes);
-        setSelectedId(id);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -303,6 +300,47 @@ export default function Extract() {
           ))}
         </div>
       </div>
+
+      {/* Text in Document Section */}
+      {result && (
+        <div className="pipeline-section">
+          <div className="section-title">
+            <span style={{ marginRight: "8px" }}>📝</span>
+            Text in Document
+          </div>
+          <p style={{ color: "var(--text-secondary)", marginBottom: "24px" }}>
+            Below is the text and data extracted from the document. If the document contains tables, they are shown as text. For images, the extracted text is shown here.
+          </p>
+          {selectedFile && ["png", "jpg", "jpeg", "gif"].includes(getFileExtension(selectedFile.name)) && (
+            <div style={{ marginBottom: "16px", textAlign: "center" }}>
+              <img
+                src={URL.createObjectURL(selectedFile)}
+                alt="Uploaded Preview"
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "200px",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
+                }}
+              />
+            </div>
+          )}
+          <div style={{
+            background: "var(--bg-tertiary)",
+            padding: "16px",
+            borderRadius: "6px",
+            border: "1px solid var(--border-color)",
+            maxHeight: "300px",
+            overflowY: "auto",
+            whiteSpace: "pre-wrap",
+            fontFamily: "monospace",
+            fontSize: "14px",
+            lineHeight: "1.5"
+          }}>
+            {result.extractedText || "No text extracted from this document."}
+          </div>
+        </div>
+      )}
 
       <div className="recent-documents">
         <div className="recent-header">

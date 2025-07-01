@@ -1,0 +1,95 @@
+ANNUAL FINANCIAL STATEMENT
+For the Year Ended December 31, 2024
+
+COMPANY: TechCorp Solutions Inc.
+FISCAL YEAR: 2024
+PREPARED BY: Finance Department
+REVIEWED BY: External Auditors
+
+INCOME STATEMENT
+
+REVENUE
+Product Sales:                    $15,250,000
+Service Revenue:                  $8,750,000
+Licensing Fees:                   $2,100,000
+Other Income:                     $450,000
+TOTAL REVENUE:                    $26,550,000
+
+COST OF GOODS SOLD
+Direct Materials:                 $8,200,000
+Direct Labor:                     $4,500,000
+Manufacturing Overhead:           $2,800,000
+TOTAL COGS:                       $15,500,000
+
+GROSS PROFIT:                     $11,050,000
+
+OPERATING EXPENSES
+Sales & Marketing:                $3,200,000
+Research & Development:           $2,800,000
+General & Administrative:         $2,100,000
+Depreciation & Amortization:      $850,000
+TOTAL OPERATING EXPENSES:         $8,950,000
+
+OPERATING INCOME:                 $2,100,000
+
+OTHER INCOME/EXPENSES
+Interest Income:                  $45,000
+Interest Expense:                 ($120,000)
+Gain on Asset Sale:               $75,000
+TOTAL OTHER:                      $0
+
+NET INCOME BEFORE TAXES:          $2,100,000
+Income Tax Expense:               ($630,000)
+NET INCOME:                       $1,470,000
+
+BALANCE SHEET (As of December 31, 2024)
+
+ASSETS
+Current Assets:
+  Cash & Cash Equivalents:        $2,500,000
+  Accounts Receivable:            $3,200,000
+  Inventory:                      $1,800,000
+  Prepaid Expenses:               $450,000
+  Total Current Assets:           $7,950,000
+
+Fixed Assets:
+  Property, Plant & Equipment:    $8,500,000
+  Less: Accumulated Depreciation: ($3,200,000)
+  Net Fixed Assets:               $5,300,000
+
+Intangible Assets:
+  Goodwill:                       $2,100,000
+  Patents & Trademarks:           $800,000
+  Total Intangible Assets:        $2,900,000
+
+TOTAL ASSETS:                     $16,150,000
+
+LIABILITIES & EQUITY
+Current Liabilities:
+  Accounts Payable:               $2,100,000
+  Accrued Expenses:               $850,000
+  Short-term Debt:                $1,200,000
+  Total Current Liabilities:      $4,150,000
+
+Long-term Liabilities:
+  Long-term Debt:                 $3,500,000
+  Deferred Tax Liability:         $450,000
+  Total Long-term Liabilities:    $3,950,000
+
+EQUITY
+Common Stock:                     $2,000,000
+Retained Earnings:                $6,050,000
+Total Equity:                     $8,050,000
+
+TOTAL LIABILITIES & EQUITY:       $16,150,000
+
+KEY FINANCIAL RATIOS
+- Current Ratio: 1.92
+- Debt-to-Equity Ratio: 1.01
+- Return on Assets: 9.1%
+- Return on Equity: 18.3%
+- Gross Profit Margin: 41.6%
+- Net Profit Margin: 5.5%
+
+AUDITOR'S OPINION: Unqualified
+DATE: March 15, 2025 

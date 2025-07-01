@@ -1,0 +1,68 @@
+DOCUMENT WITH EXCESSIVE SPECIAL SYMBOLS
+File: special_symbols_doc.txt
+Date: December 20, 2024
+Classification: Manual Review Required
+
+This document contains an unusually high number of special symbols and characters that may indicate:
+- Encrypted or encoded content
+- Technical specifications
+- Programming code
+- Mathematical formulas
+- Foreign language text
+- Corrupted or malformed data
+
+SPECIAL SYMBOLS CONTENT:
+
+Mathematical Symbols:
+∑ ∏ ∫ ∂ ∇ ∆ ∞ ≠ ≈ ≤ ≥ ± × ÷ √ ∛ ∜ ∝ ∟ ∠ ∡ ∢ ⊥ ∥ ∦ ∷ ∸ ∹ ∺ ∻ ∼ ∽ ∾ ∿ ≀ ≁ ≂ ≃ ≄ ≅ ≆ ≇ ≈ ≉ ≊ ≋ ≌ ≍ ≎ ≏ ≐ ≑ ≒ ≓ ≔ ≕ ≖ ≗ ≘ ≙ ≚ ≛ ≜ ≝ ≞ ≟ ≠ ≡ ≢ ≣ ≤ ≥ ≦ ≧ ≨ ≩ ≪ ≫ ≬ ≭ ≮ ≯ ≰ ≱ ≲ ≳ ≴ ≵ ≶ ≷ ≸ ≹ ≺ ≻ ≼ ≽ ≾ ≿ ⊀ ⊁ ⊂ ⊃ ⊄ ⊅ ⊆ ⊇ ⊈ ⊉ ⊊ ⊋ ⊌ ⊍ ⊎ ⊏ ⊐ ⊑ ⊒ ⊓ ⊔ ⊕ ⊖ ⊗ ⊘ ⊙ ⊚ ⊛ ⊜ ⊝ ⊞ ⊟ ⊠ ⊡ ⊢ ⊣ ⊤ ⊥ ⊦ ⊧ ⊨ ⊩ ⊪ ⊫ ⊬ ⊭ ⊮ ⊯ ⊰ ⊱ ⊲ ⊳ ⊴ ⊵ ⊶ ⊷ ⊸ ⊹ ⊺ ⊻ ⊼ ⊽ ⊾ ⊿ ⋀ ⋁ ⋂ ⋃ ⋄ ⋅ ⋆ ⋇ ⋈ ⋉ ⋊ ⋋ ⋌ ⋍ ⋎ ⋏ ⋐ ⋑ ⋒ ⋓ ⋔ ⋕ ⋖ ⋗ ⋘ ⋙ ⋚ ⋛ ⋜ ⋝ ⋞ ⋟ ⋠ ⋡ ⋢ ⋣ ⋤ ⋥ ⋦ ⋧ ⋨ ⋩ ⋪ ⋫ ⋬ ⋭ ⋮ ⋯ ⋰ ⋱ ⋲ ⋳ ⋴ ⋵ ⋶ ⋷ ⋸ ⋹ ⋺ ⋻ ⋼ ⋽ ⋾ ⋿
+
+Currency Symbols:
+$ ¢ £ ¤ ¥ ₠ ₡ ₢ ₣ ₤ ₥ ₦ ₧ ₨ ₩ ₪ ₫ € ₭ ₮ ₯ ₰ ₱ ₲ ₳ ₴ ₵ ₶ ₷ ₸ ₹ ₺ ₻ ₼ ₽ ₾ ₿
+
+Technical Symbols:
+⌂ ⌃ ⌄ ⌅ ⌆ ⌇ ⌈ ⌉ ⌊ ⌋ ⌌ ⌍ ⌎ ⌏ ⌐ ⌑ ⌒ ⌓ ⌔ ⌕ ⌖ ⌗ ⌘ ⌙ ⌚ ⌛ ⌜ ⌝ ⌞ ⌟ ⌠ ⌡ ⌢ ⌣ ⌤ ⌥ ⌦ ⌧ ⌨ 〈 〉 ⌫ ⌬ ⌭ ⌮ ⌯ ⌰ ⌱ ⌲ ⌳ ⌴ ⌵ ⌶ ⌷ ⌸ ⌹ ⌺ ⌻ ⌼ ⌽ ⌾ ⌿ ⍀ ⍁ ⍂ ⍃ ⍄ ⍅ ⍆ ⍇ ⍈ ⍉ ⍊ ⍋ ⍌ ⍍ ⍎ ⍏ ⍐ ⍑ ⍒ ⍓ ⍔ ⍕ ⍖ ⍗ ⍘ ⍙ ⍚ ⍛ ⍜ ⍝ ⍞ ⍟ ⍠ ⍡ ⍢ ⍣ ⍤ ⍥ ⍦ ⍧ ⍨ ⍩ ⍪ ⍫ ⍬ ⍭ ⍮ ⍯ ⍰ ⍱ ⍲ ⍳ ⍴ ⍵ ⍶ ⍷ ⍸ ⍹ ⍺
+
+Programming Symbols:
+{ } [ ] ( ) < > / \ | & * + - = ! @ # $ % ^ ~ ` ' " ; : , . ? 
+
+Foreign Characters:
+á à â ã ä å æ ç è é ê ë ì í î ï ñ ò ó ô õ ö ø ù ú û ü ý ÿ þ ß
+А Б В Г Д Е Ё Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я
+α β γ δ ε ζ η θ ι κ λ μ ν ξ ο π ρ σ τ υ φ χ ψ ω
+
+REASON FOR MANUAL REVIEW:
+- Document contains 500+ special symbols
+- Exceeds normal symbol density threshold
+- May contain encoded or encrypted information
+- Requires human analysis for proper classification
+- Potential security or compliance implications
+
+PROCESSING NOTES:
+- Automated classification confidence: 12%
+- Symbol density: 85% (normal range: 5-15%)
+- Language detection: Mixed/Unknown
+- Encoding: UTF-8 with extended characters
+- File integrity: Verified
+
+RECOMMENDED ACTIONS:
+1. Manual review by security team
+2. Content analysis for potential threats
+3. Determine document purpose and origin
+4. Apply appropriate classification rules
+5. Update automated detection algorithms
+
+SECURITY CONSIDERATIONS:
+- Check for steganography or hidden data
+- Verify document source and authenticity
+- Assess potential malware indicators
+- Review for sensitive information exposure
+- Determine appropriate access controls
+
+NEXT STEPS:
+- Route to security review queue
+- Notify system administrator
+- Log review request
+- Update classification rules if needed
+
+PROCESSED BY: Document Security System v3.0
+TIMESTAMP: 2024-12-20 14:30:25 UTC 

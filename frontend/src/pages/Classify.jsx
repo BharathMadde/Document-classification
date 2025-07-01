@@ -594,6 +594,9 @@ export default function Classify() {
         )}
       </div>
 
+      {/* Add gap between Classification Results and Document Type Distribution */}
+      <div style={{ height: '32px' }}></div>
+
       <div className="pipeline-section">
         <div className="section-title">Document Types Distribution</div>
         <p style={{ color: "var(--text-secondary)", marginBottom: "24px" }}>

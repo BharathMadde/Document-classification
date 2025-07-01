@@ -152,6 +152,14 @@ export default function HumanIntervention() {
                   <div><strong>Type:</strong> {doc.type || 'Unknown'}</div>
                   <div><strong>Confidence:</strong> {doc.confidence ? `${(doc.confidence * 100).toFixed(1)}%` : 'N/A'}</div>
                   <div><strong>Uploaded:</strong> {doc.timestamps?.ingested ? new Date(doc.timestamps.ingested).toLocaleDateString() : 'Unknown'}</div>
+                  <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
+                    <a href={doc.path.replace(/\\/g, '/').replace(/^.*uploaded_docs\//, '/uploaded_docs/')} download target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>
+                      Download
+                    </a>
+                    <button onClick={e => { e.stopPropagation(); setSelectedDoc(doc); }} style={{ background: 'none', border: '1px solid #2563eb', color: '#2563eb', borderRadius: '6px', padding: '2px 10px', cursor: 'pointer', fontWeight: 600 }}>
+                      Preview
+                    </button>
+                  </div>
                 </div>
                 <div style={{ marginTop: '12px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                   Click to review and route manually
@@ -245,6 +253,17 @@ export default function HumanIntervention() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <h3>Document Preview</h3>
+              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px', maxHeight: '200px', overflowY: 'auto' }}>
+                {selectedDoc.extractedText ? (
+                  <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>{selectedDoc.extractedText}</pre>
+                ) : (
+                  <span style={{ color: 'var(--text-secondary)' }}>No preview available.</span>
+                )}
               </div>
             </div>
 

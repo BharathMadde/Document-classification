@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { uploadDocument, listDocuments, getDocument } = require('../services/ingestor');
-const { extractText } = require('../services/extractor');
+const { uploadDocument, listDocuments, getDocument, uploadMultipleDocuments } = require('../services/ingestor');
+const { extractText, extractAndAnalyzeDocument } = require('../services/extractor');
 const { classifyDocument } = require('../services/classifier');
 const { routeDocument } = require('../services/router');
 
 router.post('/upload', uploadDocument);
+router.post('/upload-multiple', uploadMultipleDocuments);
+router.post('/analyze', extractAndAnalyzeDocument);
 router.post('/extract', extractText);
 router.post('/classify', classifyDocument);
 router.post('/route', routeDocument);

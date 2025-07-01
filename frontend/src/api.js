@@ -106,4 +106,49 @@ export async function getDocument(id) {
     console.error('Get document error:', err);
     throw new Error('Failed to fetch document. Please try again.');
   }
+}
+
+export async function uploadAndExtractDocument(file) {
+  const formData = new FormData();
+  formData.append('document', file);
+  try {
+    const res = await fetch(`${BASE_URL}/analyze`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Upload and extract failed:', errText);
+      throw new Error('Upload and extract failed: ' + errText);
+    }
+    return res.json();
+  } catch (err) {
+    console.error('Upload and extract error:', err);
+    throw new Error('Upload and extract failed. Please try again.');
+  }
+}
+
+export async function uploadMultipleDocuments(files) {
+  const formData = new FormData();
+  
+  // Append each file to the form data
+  Array.from(files).forEach((file, index) => {
+    formData.append('documents', file);
+  });
+  
+  try {
+    const res = await fetch(`${BASE_URL}/upload-multiple`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Multiple upload failed:', errText);
+      throw new Error('Multiple upload failed: ' + errText);
+    }
+    return res.json();
+  } catch (err) {
+    console.error('Multiple upload error:', err);
+    throw new Error('Multiple upload failed. Please try again.');
+  }
 } 

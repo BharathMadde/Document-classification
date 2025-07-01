@@ -1,0 +1,49 @@
+OFFICE SUPPLIES RECEIPT
+
+STAPLES OFFICE SUPPLIES
+Receipt #: STP-2024-12345
+Date: December 20, 2024
+Time: 14:30:22
+Cashier: Mary Johnson
+Store: #1234 - Downtown Location
+
+PURCHASE DETAILS
+
+Item Description                    Qty    Unit Price    Total
+--------------------------------   ---    ----------    -----
+Premium Copy Paper (500 sheets)     5     $12.99        $64.95
+Black Ink Cartridges (HP)           3     $24.99        $74.97
+Blue Pens (Pack of 12)              2     $8.99         $17.98
+Sticky Notes (3x3, Yellow)          4     $3.99         $15.96
+File Folders (Letter Size)          2     $6.99         $13.98
+Whiteboard Markers (Set of 4)       1     $9.99         $9.99
+Paper Clips (Box of 100)            2     $4.99         $9.98
+Highlighters (Pack of 6)            1     $5.99         $5.99
+
+SUBTOTAL:                           $213.80
+TAX (8.5%):                         $18.17
+TOTAL:                              $231.97
+
+PAYMENT METHOD
+- Company Credit Card
+- Card #: **** **** **** 1234
+- Authorization: APPROVED
+
+PURCHASE PURPOSE
+- Department: Marketing
+- Project: Q1 2025 Campaign Materials
+- Approved by: Marketing Manager
+- Budget Code: MKT-2025-001
+
+RETURN POLICY
+- 30 days for unopened items
+- Receipt required for returns
+- Store credit or exchange only
+
+CUSTOMER SERVICE
+- Phone: 1-800-STAPLES
+- Email: customer.service@staples.com
+- Website: www.staples.com
+
+THANK YOU FOR YOUR BUSINESS!
+Please keep this receipt for your records. 

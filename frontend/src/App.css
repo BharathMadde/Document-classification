@@ -165,9 +165,8 @@ body {
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: var(--accent-primary);
   border-radius: 12px;
-  color: white;
+  color: var(--sidebar-text);
 }
 
 .sidebar-nav {
@@ -204,9 +203,17 @@ body {
   box-shadow: 0 4px 12px rgba(30, 144, 255, 0.3);
 }
 
+.nav-item.active .nav-icon {
+  color: white;
+}
+
 .nav-item.active:hover {
   color: white;
   transform: translateX(0);
+}
+
+.nav-item.active:hover .nav-icon {
+  color: white;
 }
 
 .nav-icon {
@@ -320,6 +327,13 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 12px;
+}
+
+.dashboard-title span {
+  -webkit-text-fill-color: initial;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
 }
 
 .dashboard-subtitle {

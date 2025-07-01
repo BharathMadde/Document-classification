@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { updateDocument } = require("./ingestor");
+const Tesseract = require('tesseract.js');
 
 // Enhanced OCR simulation that generates realistic data based on file content
 const processDocumentContent = (filePath, fileName) => {
@@ -172,6 +173,64 @@ Key Information:
       resolve({ extractedText, entities });
     }, 10); // 10ms for fast processing
   });
+};
+
+// Helper to detect tables in text (simple heuristic: lines with multiple columns separated by tabs or multiple spaces)
+function detectTables(text) {
+  const lines = text.split('\n');
+  const tables = [];
+  let currentTable = [];
+  for (const line of lines) {
+    if (/\t|\s{2,}/.test(line)) {
+      currentTable.push(line);
+    } else {
+      if (currentTable.length > 1) {
+        tables.push([...currentTable]);
+        currentTable = [];
+      } else {
+        currentTable = [];
+      }
+    }
+  }
+  if (currentTable.length > 1) tables.push(currentTable);
+  return tables;
+}
+
+// Unified endpoint for file upload, text extraction, and table detection
+exports.extractAndAnalyzeDocument = async (req, res) => {
+  try {
+    if (!req.files || !req.files.document) {
+      return res.status(400).json({ success: false, error: 'No document uploaded' });
+    }
+    const doc = req.files.document;
+    const fileName = doc.name;
+    const ext = path.extname(fileName).toLowerCase();
+    const tempPath = path.join(__dirname, '../../uploaded_docs', `${Date.now()}_${fileName}`);
+    await doc.mv(tempPath);
+
+    let extractedText = '';
+    let tables = [];
+    if ([".png", ".jpg", ".jpeg", ".gif"].includes(ext)) {
+      // OCR for images
+      const { data: { text } } = await Tesseract.recognize(tempPath, 'eng');
+      extractedText = text;
+      tables = detectTables(text);
+    } else {
+      // For text-based docs, read as text
+      extractedText = fs.readFileSync(tempPath, 'utf8');
+      tables = detectTables(extractedText);
+    }
+
+    res.json({
+      success: true,
+      extractedText,
+      tables,
+      fileName,
+      message: 'Extraction and analysis complete.'
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Extraction failed', details: err.message });
+  }
 };
 
 exports.extractText = async (req, res) => {

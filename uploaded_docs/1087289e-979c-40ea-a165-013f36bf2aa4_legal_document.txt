@@ -1,0 +1,70 @@
+BUDGET ANALYSIS REPORT
+Q4 2024 vs. Actual Performance
+
+DEPARTMENT: Marketing
+PERIOD: October 1 - December 31, 2024
+PREPARED BY: Financial Planning Team
+DATE: January 15, 2025
+
+BUDGET VS. ACTUAL COMPARISON
+
+DIGITAL MARKETING
+Budgeted: $125,000    Actual: $118,450    Variance: +$6,550 (5.2% under)
+- Google Ads: $45,000 budgeted, $42,100 actual (+$2,900 under)
+- Social Media: $35,000 budgeted, $33,200 actual (+$1,800 under)
+- Email Marketing: $25,000 budgeted, $23,150 actual (+$1,850 under)
+- Content Creation: $20,000 budgeted, $20,000 actual (on budget)
+
+TRADITIONAL MARKETING
+Budgeted: $75,000     Actual: $82,300     Variance: -$7,300 (9.7% over)
+- Print Advertising: $30,000 budgeted, $35,200 actual (-$5,200 over)
+- Trade Shows: $25,000 budgeted, $28,100 actual (-$3,100 over)
+- Direct Mail: $20,000 budgeted, $19,000 actual (+$1,000 under)
+
+CREATIVE SERVICES
+Budgeted: $50,000     Actual: $48,750     Variance: +$1,250 (2.5% under)
+- Graphic Design: $25,000 budgeted, $24,500 actual (+$500 under)
+- Video Production: $15,000 budgeted, $14,250 actual (+$750 under)
+- Photography: $10,000 budgeted, $10,000 actual (on budget)
+
+MARKETING TECHNOLOGY
+Budgeted: $30,000     Actual: $28,900     Variance: +$1,100 (3.7% under)
+- CRM Software: $15,000 budgeted, $14,500 actual (+$500 under)
+- Analytics Tools: $10,000 budgeted, $9,400 actual (+$600 under)
+- Automation Platform: $5,000 budgeted, $5,000 actual (on budget)
+
+TOTAL MARKETING BUDGET
+Budgeted: $280,000    Actual: $278,400    Variance: +$1,600 (0.6% under)
+
+PERFORMANCE ANALYSIS
+
+POSITIVE VARIANCES
+1. Digital Marketing efficiency improved due to better targeting
+2. Creative services completed under budget with quality maintained
+3. Technology investments optimized for cost savings
+
+NEGATIVE VARIANCES
+1. Print advertising costs increased due to paper price inflation
+2. Trade show expenses exceeded budget due to additional events
+3. Some campaigns required additional creative iterations
+
+ROI ANALYSIS
+- Digital Marketing ROI: 320% (target: 280%)
+- Traditional Marketing ROI: 180% (target: 200%)
+- Overall Marketing ROI: 245% (target: 240%)
+
+RECOMMENDATIONS
+1. Continue optimizing digital marketing spend
+2. Review print advertising strategy for cost efficiency
+3. Implement stricter trade show budget controls
+4. Maintain current creative services efficiency
+5. Consider increasing technology budget for automation
+
+FORECAST FOR Q1 2025
+- Projected Budget: $285,000
+- Expected ROI: 250%
+- Key Initiatives: AI-powered targeting, video content expansion
+- Risk Factors: Potential ad platform price increases
+
+APPROVED BY: CFO
+REVIEWED BY: Marketing Director 
