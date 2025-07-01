@@ -54,7 +54,7 @@ export default function Dashboard() {
   return (
     <div className="page-container">
       <div className="dashboard-header">
-        <h1 className="dashboard-title">
+        <h1 className="dashboard-title section-darkblue-light">
           <span style={{ marginRight: "12px", verticalAlign: "middle" }}>
             <BarChart2 size={32} color="#3b82f6" />
           </span>
@@ -63,27 +63,6 @@ export default function Dashboard() {
         <p className="dashboard-subtitle">
           Real-time document stats and workflow overview
         </p>
-        <div style={{ margin: "16px 0", color: "#2563eb", fontWeight: 500 }}>
-          {documents.length > 0 ? (
-            <>
-              <div>
-                Ingest: {documents[0].messages?.ingest || "No ingest info."}
-              </div>
-              <div>
-                Extract: {documents[0].messages?.extract || "No extract info."}
-              </div>
-              <div>
-                Classify:{" "}
-                {documents[0].messages?.classify || "No classify info."}
-              </div>
-              <div>
-                Route: {documents[0].messages?.route || "No route info."}
-              </div>
-            </>
-          ) : (
-            "No documents in the system yet."
-          )}
-        </div>
       </div>
       <div className="stats-grid">
         {stats.map((stat, idx) => (

@@ -61,7 +61,7 @@ const UserEmail = styled.span`
 export default function ThemeToggle({ theme, setTheme, onLogout, user }) {
   return (
     <ToggleBar>
-      {user?.email && <UserEmail>{user.email}</UserEmail>}
+      {user?.email && <UserEmail>{user.email.split("@")[0]}</UserEmail>}
       <ToggleBtn 
         onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} 
         title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}

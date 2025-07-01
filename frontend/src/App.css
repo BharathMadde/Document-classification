@@ -854,3 +854,11 @@ body {
     transform: scale(1);
   }
 }
+
+/* Section title dark blue for light theme */
+[data-theme="light"] .section-darkblue-light {
+  color: #1e3a8a !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: initial !important;
+}
