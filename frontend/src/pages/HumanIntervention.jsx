@@ -92,10 +92,13 @@ export default function HumanIntervention() {
   return (
     <div className="page-container">
       <div className="dashboard-header">
-        <h1 className="dashboard-title">
+        <h1 className="dashboard-title section-darkblue-light">
           <span style={{ marginRight: '12px' }}>🧑‍💼</span>
           Human Intervention & Manual Routing
         </h1>
+        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e3a8a', margin: '8px 0 0 0', letterSpacing: '1px' }}>
+          <span role="img" aria-label="intervention">🛠️</span> Human Intervention
+        </div>
         <p className="dashboard-subtitle">
           Review documents that AI couldn't process and manually route them to appropriate destinations.
         </p>
@@ -146,8 +149,13 @@ export default function HumanIntervention() {
                       fontSize: '0.75rem', 
                       background: getStatusColor(doc.status), 
                       color: 'white',
-                      padding: '2px 6px',
-                      borderRadius: '8px'
+                      padding: '2px 10px',
+                      borderRadius: '8px',
+                      whiteSpace: 'nowrap',
+                      display: 'inline-block',
+                      fontWeight: 700,
+                      letterSpacing: '0.5px',
+                      lineHeight: 1.5
                     }}>
                       {doc.status}
                     </span>
@@ -178,46 +186,123 @@ export default function HumanIntervention() {
 
       {/* Manual Routing Modal */}
       {selectedDoc && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: 'var(--bg-secondary)',
-            borderRadius: '16px',
-            padding: '32px',
-            maxWidth: '600px',
-            width: '90%',
-            maxHeight: '80vh',
-            overflow: 'auto',
-            boxShadow: 'var(--shadow-neumorphism)'
-          }}>
+        <div
+          onClick={e => { if (e.target === e.currentTarget) setSelectedDoc(null); }}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.3)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}
+        >
+          <div
+            style={{
+              background: 'var(--bg-secondary)',
+              borderRadius: '20px',
+              padding: '32px',
+              maxWidth: '1100px',
+              width: '98%',
+              maxHeight: '95vh',
+              overflowY: 'auto',
+              boxShadow: '0 8px 32px rgba(30,64,175,0.18)',
+              border: '2px solid #1e3a8a',
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'stretch'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ margin: 0 }}>Manual Routing: {selectedDoc.name}</h2>
+              <h2 style={{ margin: 0, color: '#1e3a8a', fontWeight: 800, fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span role="img" aria-label="doc">📄</span> {selectedDoc.name}
+              </h2>
               <button 
                 onClick={() => setSelectedDoc(null)}
                 style={{
                   background: 'none',
                   border: 'none',
-                  fontSize: '24px',
+                  fontSize: '2rem',
                   cursor: 'pointer',
-                  color: 'var(--text-secondary)'
+                  color: '#1e3a8a',
+                  fontWeight: 700
                 }}
+                title="Close"
               >
                 ×
               </button>
             </div>
-
             <div style={{ marginBottom: '24px' }}>
-              <h3>Document Details</h3>
+              <h3 style={{ color: '#2563eb', fontWeight: 700 }}>Document Preview</h3>
+              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', marginBottom: '16px', textAlign: 'center', boxShadow: '0 2px 8px rgba(30,64,175,0.08)' }}>
+                {selectedDoc.name && /\.(png|jpg|jpeg|gif)$/i.test(selectedDoc.name) ? (
+                  <img
+                    src={(() => {
+                      const path = selectedDoc.path || selectedDoc.filePath || '';
+                      const fileName = path.split(/[/\\]/).pop();
+                      return '/uploaded_docs/' + fileName;
+                    })()}
+                    alt="Document Preview"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '60vh',
+                      borderRadius: '8px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                      display: 'block',
+                      margin: '0 auto'
+                    }}
+                  />
+                ) : selectedDoc.name && /\.(pdf)$/i.test(selectedDoc.name) ? (
+                  <iframe
+                    src={(() => {
+                      const path = selectedDoc.path || selectedDoc.filePath || '';
+                      const fileName = path.split(/[/\\]/).pop();
+                      return '/uploaded_docs/' + fileName;
+                    })()}
+                    title="PDF Preview"
+                    style={{ width: '100%', height: '250px', border: 'none', borderRadius: '8px', background: 'white' }}
+                  />
+                ) : selectedDoc.extractedText ? (
+                  <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0, textAlign: 'left', fontFamily: 'monospace', fontSize: '1rem', color: '#1e3a8a' }}>{selectedDoc.extractedText}</pre>
+                ) : (
+                  <span style={{ color: 'var(--text-secondary)' }}>No preview available.</span>
+                )}
+                <a
+                  href={(() => {
+                    const path = selectedDoc.path || selectedDoc.filePath || '';
+                    const fileName = path.split(/[/\\]/).pop();
+                    return '/uploaded_docs/' + fileName;
+                  })()}
+                  download
+                  style={{
+                    display: 'inline-block',
+                    marginTop: 16,
+                    background: '#2563eb',
+                    color: 'white',
+                    padding: '10px 24px',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                    fontSize: '1rem',
+                    boxShadow: '0 2px 8px #2563eb33',
+                    alignItems: 'center',
+                    gap: 8
+                  }}
+                >
+                  ⬇️ Download File
+                </a>
+              </div>
+            </div>
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ color: '#2563eb', fontWeight: 700 }}>Document Details</h3>
               <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
                 <div><strong>Status:</strong> {selectedDoc.status}</div>
                 <div><strong>Type:</strong> {selectedDoc.type || 'Unknown'}</div>
@@ -236,9 +321,8 @@ export default function HumanIntervention() {
                 <div><strong>Routed:</strong> {selectedDoc.timestamps?.routed ? new Date(selectedDoc.timestamps.routed).toLocaleString() : 'N/A'}</div>
               </div>
             </div>
-
             <div style={{ marginBottom: '24px' }}>
-              <h3>Select Destination</h3>
+              <h3 style={{ color: '#2563eb', fontWeight: 700 }}>Select Destination</h3>
               <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>
                 Choose the appropriate destination for this document:
               </p>
@@ -269,18 +353,6 @@ export default function HumanIntervention() {
                 ))}
               </div>
             </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <h3>Document Preview</h3>
-              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px', maxHeight: '200px', overflowY: 'auto' }}>
-                {selectedDoc.extractedText ? (
-                  <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>{selectedDoc.extractedText}</pre>
-                ) : (
-                  <span style={{ color: 'var(--text-secondary)' }}>No preview available.</span>
-                )}
-              </div>
-            </div>
-
             {isRouting && (
               <div style={{ textAlign: 'center', padding: '16px' }}>
                 <div className="processing-indicator">

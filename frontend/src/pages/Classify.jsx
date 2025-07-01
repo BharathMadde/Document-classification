@@ -219,7 +219,7 @@ export default function Classify() {
   return (
     <div className="page-container">
       <div className="dashboard-header">
-        <h1 className="dashboard-title">
+        <h1 className="dashboard-title section-darkblue-light">
           <span style={{ marginRight: "12px" }}>🧠</span>
           AI Document Classification
         </h1>
