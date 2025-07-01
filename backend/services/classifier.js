@@ -10,17 +10,35 @@ const classifyDocumentContent = async (extractedText, entities, fileName) => {
   let contentToClassify = extractedText && extractedText.trim() ? extractedText : fileName;
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = `Classify the following document content into one of these types: Invoice, Contract, Report, Receipt, Statement, Budget, Payment, Legal, Analysis, Expense, Financial, or Unknown.\nContent:\n${contentToClassify}`;
+    const prompt = `Classify the following document content into one of these types: Invoice, Contract, Report, Receipt, Statement, Budget, Payment, Legal, Analysis, Expense, Financial, or Unknown. Respond in the format: Type: <type> (Confidence: <confidence between 0 and 1>).\nContent:\n${contentToClassify}`;
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-    // Simple extraction: expect format "Type: <type> (Confidence: <confidence>)"
-    const match = text.match(/Type:\s*(\w+)/i);
+    // Try to extract type and confidence from the response
+    const match = text.match(/Type:\s*(\w+)(?:\s*\(Confidence:\s*([0-9.]+)\))?/i);
     if (match) {
       docType = match[1];
-      confidence = 0.9;
+      if (match[2]) {
+        confidence = parseFloat(match[2]);
+      } else {
+        // Estimate confidence based on strong keywords
+        const strongTypes = ["Invoice", "Contract", "Report", "Receipt", "Statement", "Budget", "Payment", "Legal", "Analysis", "Expense", "Financial"];
+        if (strongTypes.includes(docType)) {
+          confidence = 0.9;
+        } else {
+          confidence = 0.7;
+        }
+      }
     } else {
-      docType = text.trim();
-      confidence = 0.7;
+      // Fallback: try to find a type in the text
+      const strongTypes = ["Invoice", "Contract", "Report", "Receipt", "Statement", "Budget", "Payment", "Legal", "Analysis", "Expense", "Financial"];
+      const foundType = strongTypes.find(type => text.toLowerCase().includes(type.toLowerCase()));
+      if (foundType) {
+        docType = foundType;
+        confidence = 0.8;
+      } else {
+        docType = text.trim();
+        confidence = 0.7;
+      }
     }
   } catch (err) {
     docType = "Unknown";
