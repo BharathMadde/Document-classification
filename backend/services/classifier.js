@@ -23,8 +23,60 @@ const classifyDocumentContent = async (extractedText, entities, fileName) => {
       confidence = 0.7;
     }
   } catch (err) {
-    docType = "Unknown";
-    confidence = 0.5;
+    // Local fallback classification if Gemini fails
+    const fileNameLower = (fileName || "").toLowerCase();
+    if (fileNameLower.includes("invoice") || fileNameLower.includes("bill")) {
+      docType = "Invoice";
+      confidence = 0.9;
+    } else if (fileNameLower.includes("contract") || fileNameLower.includes("agreement")) {
+      docType = "Contract";
+      confidence = 0.9;
+    } else if (fileNameLower.includes("receipt")) {
+      docType = "Receipt";
+      confidence = 0.9;
+    } else if (fileNameLower.includes("report")) {
+      docType = "Report";
+      confidence = 0.9;
+    } else if (fileNameLower.includes("statement")) {
+      docType = "Statement";
+      confidence = 0.9;
+    } else if (fileNameLower.includes("budget")) {
+      docType = "Budget";
+      confidence = 0.9;
+    } else if (fileNameLower.includes("payment")) {
+      docType = "Payment";
+      confidence = 0.9;
+    } else if (fileNameLower.includes("legal") || fileNameLower.includes("compliance")) {
+      docType = "Legal";
+      confidence = 0.9;
+    } else if (fileNameLower.includes("analysis") || fileNameLower.includes("analytics")) {
+      docType = "Analysis";
+      confidence = 0.9;
+    } else if (fileNameLower.includes("expense")) {
+      docType = "Expense";
+      confidence = 0.9;
+    } else if (fileNameLower.includes("financial")) {
+      docType = "Financial";
+      confidence = 0.9;
+    } else if (entities) {
+      if (entities.invoice_number || entities.amount || entities.total) {
+        docType = "Invoice";
+        confidence = 0.7;
+      } else if (entities.contract_id || entities.client || entities.vendor) {
+        docType = "Contract";
+        confidence = 0.7;
+      } else if (entities.receipt_number || entities.store || entities.subtotal) {
+        docType = "Receipt";
+        confidence = 0.7;
+      } else if (entities.report_id || entities.department || entities.revenue) {
+        docType = "Report";
+        confidence = 0.7;
+      } else if (entities.document_id) {
+        docType = "Document";
+        confidence = 0.7;
+      }
+    }
+    // else keep as Unknown with 0.5
   }
   return { docType, confidence };
 };

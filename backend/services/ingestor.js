@@ -49,7 +49,9 @@ async function processDocumentWorkflow(id) {
     // 3. Route
     await new Promise((resolve) => setTimeout(resolve, 2500)); // 2.5s delay
     try {
-      await axios.post(`${BACKEND_URL}/api/route`, { id });
+      // Find the document and pass its confidence to the router
+      const doc = documents.find((d) => d.id === id);
+      await axios.post(`${BACKEND_URL}/api/route`, { id, confidence: doc?.confidence });
     } catch (e) {
       console.error("Route error", e.message);
     }
