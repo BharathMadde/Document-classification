@@ -12,113 +12,51 @@ const routeDocumentByType = (
   return new Promise((resolve) => {
     setTimeout(() => {
       let destination = "Slack"; // Default to Slack
-      const fileNameLower = (fileName || "").toLowerCase();
-      const contentLower = (extractedText || "").toLowerCase();
-
-      // --- NEW: Route by sample_files folder if applicable ---
-      if (filePath && filePath.includes('sample_files')) {
-        // Extract the folder name after sample_files
-        const parts = filePath.split(path.sep);
-        const sampleIdx = parts.findIndex(p => p === 'sample_files');
-        if (sampleIdx !== -1 && parts.length > sampleIdx + 1) {
-          const folder = parts[sampleIdx + 1];
-          // Route to folder name (normalize for known destinations)
-          const folderMap = {
-            'Legal DMS': 'Legal DMS',
-            'Dashboard': 'Dashboard',
-            'Expense Tracker': 'Expense Tracker',
-            'Financial Review': 'Financial Review',
-            'Slack': 'Slack',
-            'Unclassified': 'Unclassified',
-            'Manual Review': 'Manual Review',
-          };
-          if (folderMap[folder]) {
-            destination = folderMap[folder];
-            resolve(destination);
-            return;
-          }
-        }
-      }
-      // --- END NEW ---
-
-      // Enhanced routing based on document type
       if (docType) {
         const typeLower = docType.toLowerCase();
-
-        // Financial documents
         if (
           typeLower.includes("invoice") ||
           typeLower.includes("bill") ||
           typeLower.includes("payment")
         ) {
           destination = "Accounting ERP";
-        }
-        // Legal documents
-        else if (
+        } else if (
           typeLower.includes("contract") ||
           typeLower.includes("legal") ||
           typeLower.includes("compliance")
         ) {
           destination = "Legal DMS";
-        }
-        // Reports and analytics
-        else if (
+        } else if (
           typeLower.includes("report") ||
           typeLower.includes("analysis") ||
           typeLower.includes("analytics")
         ) {
           destination = "Analytics Dashboard";
-        }
-        // Receipts and expenses
-        else if (
+        } else if (
           typeLower.includes("receipt") ||
           typeLower.includes("expense")
         ) {
           destination = "Expense Tracker";
-        }
-        // Financial statements and budgets
-        else if (
+        } else if (
           typeLower.includes("statement") ||
           typeLower.includes("budget") ||
           typeLower.includes("financial")
         ) {
           destination = "Financial Review";
-        }
-        // Unknown or unclear document types
-        else if (
+        } else if (
           typeLower.includes("unknown") ||
           typeLower.includes("unclear") ||
           typeLower.includes("unclassified")
         ) {
           destination = "Human Intervention";
-        }
-        // Default routing based on common document types
-        else if (fileNameLower.includes("dashboard")) {
-          destination = "Analytics Dashboard";
         } else {
-          // If the file name or content suggests dashboard, analytics, or report, prefer Analytics Dashboard
-          if (
-            fileNameLower.includes("dashboard") ||
-            contentLower.includes("dashboard")
-          ) {
-            destination = "Analytics Dashboard";
-          } else {
-            destination = "Slack";
-          }
+          destination = "Slack";
         }
       } else {
-        // No type provided - send to Human Intervention
         destination = "Human Intervention";
       }
-
-      // Check for high proportion of special symbols in extractedText
-      const symbolMatch = (extractedText || '').match(/[!@#$%^&*()]/g);
-      if (symbolMatch && symbolMatch.length > 20) { // threshold can be adjusted
-        destination = 'Manual Review';
-      }
-
       resolve(destination);
-    }, 5); // 5ms for instant response
+    }, 5);
   });
 };
 

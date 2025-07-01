@@ -4,153 +4,29 @@ const { updateDocument } = require("./ingestor");
 const genAI = new GoogleGenerativeAI("AIzaSyBrA0LGtMg26-vYg_6qKTxyQK2cn6ZWBVs");
 
 // Enhanced classification based on extracted entities and content
-const classifyDocumentContent = (extractedText, entities, fileName) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      let docType = "Unknown";
-      let confidence = 0.5;
-
-      // Classify based on file name first
-      const fileNameLower = fileName.toLowerCase();
-      if (fileNameLower.includes("invoice") || fileNameLower.includes("bill")) {
-        docType = "Invoice";
-        confidence = 0.95;
-      } else if (
-        fileNameLower.includes("contract") ||
-        fileNameLower.includes("agreement")
-      ) {
-        docType = "Contract";
-        confidence = 0.95;
-      } else if (fileNameLower.includes("receipt")) {
-        docType = "Receipt";
-        confidence = 0.95;
-      } else if (fileNameLower.includes("report")) {
-        docType = "Report";
-        confidence = 0.95;
-      } else if (fileNameLower.includes("statement")) {
-        docType = "Statement";
-        confidence = 0.95;
-      } else if (fileNameLower.includes("budget")) {
-        docType = "Budget";
-        confidence = 0.95;
-      } else if (fileNameLower.includes("payment")) {
-        docType = "Payment";
-        confidence = 0.95;
-      } else if (
-        fileNameLower.includes("legal") ||
-        fileNameLower.includes("compliance")
-      ) {
-        docType = "Legal";
-        confidence = 0.95;
-      } else if (
-        fileNameLower.includes("analysis") ||
-        fileNameLower.includes("analytics")
-      ) {
-        docType = "Analysis";
-        confidence = 0.95;
-      } else if (fileNameLower.includes("expense")) {
-        docType = "Expense";
-        confidence = 0.95;
-      } else if (fileNameLower.includes("financial")) {
-        docType = "Financial";
-        confidence = 0.95;
-      } else {
-        // Classify based on extracted entities
-        if (entities) {
-          if (entities.invoice_number || entities.amount || entities.total) {
-            docType = "Invoice";
-            confidence = 0.9;
-          } else if (
-            entities.contract_id ||
-            entities.client ||
-            entities.vendor
-          ) {
-            docType = "Contract";
-            confidence = 0.9;
-          } else if (
-            entities.receipt_number ||
-            entities.store ||
-            entities.subtotal
-          ) {
-            docType = "Receipt";
-            confidence = 0.9;
-          } else if (
-            entities.report_id ||
-            entities.department ||
-            entities.revenue
-          ) {
-            docType = "Report";
-            confidence = 0.9;
-          } else if (entities.document_id) {
-            // Generic document classification based on content
-            const contentLower = extractedText.toLowerCase();
-            if (
-              contentLower.includes("invoice") ||
-              contentLower.includes("bill")
-            ) {
-              docType = "Invoice";
-              confidence = 0.85;
-            } else if (
-              contentLower.includes("contract") ||
-              contentLower.includes("agreement")
-            ) {
-              docType = "Contract";
-              confidence = 0.85;
-            } else if (contentLower.includes("receipt")) {
-              docType = "Receipt";
-              confidence = 0.85;
-            } else if (
-              contentLower.includes("report") ||
-              contentLower.includes("analysis")
-            ) {
-              docType = "Report";
-              confidence = 0.85;
-            } else if (
-              contentLower.includes("statement") ||
-              contentLower.includes("financial")
-            ) {
-              docType = "Statement";
-              confidence = 0.85;
-            } else if (contentLower.includes("budget")) {
-              docType = "Budget";
-              confidence = 0.85;
-            } else if (contentLower.includes("payment")) {
-              docType = "Payment";
-              confidence = 0.85;
-            } else if (
-              contentLower.includes("legal") ||
-              contentLower.includes("compliance")
-            ) {
-              docType = "Legal";
-              confidence = 0.85;
-            } else if (contentLower.includes("expense")) {
-              docType = "Expense";
-              confidence = 0.85;
-            } else {
-              // Fallback to random classification for unknown types
-              const types = [
-                "Invoice",
-                "Contract",
-                "Report",
-                "Receipt",
-                "Statement",
-                "Budget",
-                "Payment",
-                "Legal",
-                "Analysis",
-                "Expense",
-                "Financial",
-              ];
-              docType = types[Math.floor(Math.random() * types.length)];
-              confidence = 0.7;
-            }
-          }
-        }
-      }
-
-      resolve({ docType, confidence });
-    }, 5); // 5ms for instant response
-  });
+const classifyDocumentContent = async (extractedText, entities, fileName) => {
+  let docType = "Unknown";
+  let confidence = 0.5;
+  let contentToClassify = extractedText && extractedText.trim() ? extractedText : fileName;
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const prompt = `Classify the following document content into one of these types: Invoice, Contract, Report, Receipt, Statement, Budget, Payment, Legal, Analysis, Expense, Financial, or Unknown.\nContent:\n${contentToClassify}`;
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    // Simple extraction: expect format "Type: <type> (Confidence: <confidence>)"
+    const match = text.match(/Type:\s*(\w+)/i);
+    if (match) {
+      docType = match[1];
+      confidence = 0.9;
+    } else {
+      docType = text.trim();
+      confidence = 0.7;
+    }
+  } catch (err) {
+    docType = "Unknown";
+    confidence = 0.5;
+  }
+  return { docType, confidence };
 };
 
 exports.classifyDocument = async (req, res) => {
