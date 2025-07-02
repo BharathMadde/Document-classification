@@ -1,0 +1,54 @@
+UNKNOWN DOCUMENT TYPE
+File: document_unknown_001.txt
+Date Found: December 20, 2024
+Source: Email attachment
+Processing Status: Pending classification
+
+DOCUMENT CONTENT:
+This appears to be a document with mixed content types and unclear structure.
+The document contains various elements that don't fit standard classification patterns.
+
+CONTENT ANALYSIS:
+- Contains numerical data: 12345, 67890, 11111
+- Has some text elements: "sample", "test", "document"
+- Includes special characters: @#$%^&*()
+- Mixed formatting: UPPERCASE, lowercase, Mixed Case
+- Contains dates: 2024-12-20, 01/15/2025
+- Has currency symbols: $100, €50, £25
+
+POTENTIAL CLASSIFICATIONS:
+1. Test document
+2. Sample data file
+3. Mixed content document
+4. Unstructured data
+5. Template file
+
+PROCESSING NOTES:
+- Document lacks clear header or footer
+- No identifiable document type markers
+- Content appears to be placeholder or test data
+- Requires manual review for proper classification
+- May need additional context for routing decision
+
+RECOMMENDED ACTIONS:
+1. Manual review by human operator
+2. Request additional context from sender
+3. Apply default classification rules
+4. Flag for follow-up processing
+5. Store in unclassified queue
+
+AUTOMATED ANALYSIS RESULTS:
+- Confidence Score: 23%
+- Suggested Category: Unclassified
+- Processing Time: 0.5 seconds
+- Error Rate: High
+- Requires Human Intervention: Yes
+
+NEXT STEPS:
+- Send to manual review queue
+- Notify system administrator
+- Log classification attempt
+- Update processing rules if needed
+
+PROCESSED BY: Document Classification System v2.1
+TIMESTAMP: 2024-12-20 14:30:25 UTC 
