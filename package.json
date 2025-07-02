@@ -16,6 +16,7 @@
     "node-tesseract-ocr": "^2.2.1",
     "openai": "^5.7.0",
     "pdf-parse": "^1.1.1",
+    "react-tooltip": "^5.29.1",
     "tesseract.js": "^6.0.1",
     "uuid": "^11.1.0"
   },

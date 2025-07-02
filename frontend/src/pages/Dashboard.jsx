@@ -51,6 +51,11 @@ export default function Dashboard() {
     { title: "Failed", value: 0, icon: "❌", color: "red" },
   ];
 
+  function formatConfidence(conf) {
+    if (typeof conf !== 'number') return '-';
+    return conf <= 1 ? `${(conf * 100).toFixed(1)}%` : `${conf.toFixed(1)}%`;
+  }
+
   return (
     <div className="page-container">
       <div className="dashboard-header">
@@ -135,7 +140,7 @@ export default function Dashboard() {
                     verticalAlign: "middle",
                   }}
                 >
-                  {doc.confidence || "-"}
+                  {formatConfidence(doc.confidence)}
                 </td>
                 <td
                   style={{

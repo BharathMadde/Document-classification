@@ -84,6 +84,11 @@ export default function HumanIntervention() {
     }
   };
 
+  function formatConfidence(conf) {
+    if (typeof conf !== 'number') return 'N/A';
+    return conf <= 1 ? `${(conf * 100).toFixed(1)}%` : `${conf.toFixed(1)}%`;
+  }
+
   return (
     <div className="page-container">
       <div className="dashboard-header">
@@ -158,7 +163,8 @@ export default function HumanIntervention() {
                 </div>
                 <div className="feature-description">
                   <div><strong>Type:</strong> {doc.type || 'Unknown'}</div>
-                  <div><strong>Confidence:</strong> {doc.confidence ? `${(doc.confidence * 100).toFixed(1)}%` : 'N/A'}</div>
+                  <div><strong>Confidence:</strong> {formatConfidence(doc.confidence)}</div>
+                  <div><strong>Destination:</strong> {doc.destination || 'N/A'}</div>
                   <div><strong>Uploaded:</strong> {doc.timestamps?.ingested ? new Date(doc.timestamps.ingested).toLocaleDateString() : 'Unknown'}</div>
                   <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
                     <a href={doc.path.replace(/\\/g, '/').replace(/^.*uploaded_docs\//, '/uploaded_docs/')} download target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>
@@ -300,11 +306,19 @@ export default function HumanIntervention() {
               <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
                 <div><strong>Status:</strong> {selectedDoc.status}</div>
                 <div><strong>Type:</strong> {selectedDoc.type || 'Unknown'}</div>
-                <div><strong>Confidence:</strong> {selectedDoc.confidence ? `${(selectedDoc.confidence * 100).toFixed(1)}%` : 'N/A'}</div>
+                <div><strong>Confidence:</strong> {formatConfidence(selectedDoc.confidence)}</div>
+                <div><strong>Destination:</strong> {selectedDoc.destination || 'N/A'}</div>
                 <div><strong>Uploaded:</strong> {selectedDoc.timestamps?.ingested ? new Date(selectedDoc.timestamps.ingested).toLocaleDateString() : 'Unknown'}</div>
                 {selectedDoc.entities && (
                   <div><strong>Extracted Entities:</strong> {JSON.stringify(selectedDoc.entities)}</div>
                 )}
+                {selectedDoc.extractedText && (
+                  <div><strong>Extracted Text:</strong> <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{selectedDoc.extractedText}</pre></div>
+                )}
+                <div><strong>Ingested:</strong> {selectedDoc.timestamps?.ingested ? new Date(selectedDoc.timestamps.ingested).toLocaleString() : 'N/A'}</div>
+                <div><strong>Extracted:</strong> {selectedDoc.timestamps?.extracted ? new Date(selectedDoc.timestamps.extracted).toLocaleString() : 'N/A'}</div>
+                <div><strong>Classified:</strong> {selectedDoc.timestamps?.classified ? new Date(selectedDoc.timestamps.classified).toLocaleString() : 'N/A'}</div>
+                <div><strong>Routed:</strong> {selectedDoc.timestamps?.routed ? new Date(selectedDoc.timestamps.routed).toLocaleString() : 'N/A'}</div>
               </div>
             </div>
             <div style={{ marginBottom: '24px' }}>

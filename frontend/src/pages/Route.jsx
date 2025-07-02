@@ -257,6 +257,27 @@ const DocumentPreview = ({ document, onClose }) => {
           </div>
         )}
 
+        {document.extractedText && (
+          <div style={{ marginTop: '12px' }}>
+            <h4 style={{ margin: '0 0 8px 0', color: 'var(--text-primary)', fontSize: '15px', fontWeight: '600' }}>📝 Extracted Text</h4>
+            <div style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-color)', maxHeight: 120, overflowY: 'auto' }}>
+              <pre style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>{document.extractedText}</pre>
+            </div>
+          </div>
+        )}
+
+        {document.timestamps && (
+          <div style={{ marginTop: '12px' }}>
+            <h4 style={{ margin: '0 0 8px 0', color: 'var(--text-primary)', fontSize: '15px', fontWeight: '600' }}>⏱️ Timestamps</h4>
+            <div style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+              <div>Ingested: {document.timestamps.ingested ? new Date(document.timestamps.ingested).toLocaleString() : 'N/A'}</div>
+              <div>Extracted: {document.timestamps.extracted ? new Date(document.timestamps.extracted).toLocaleString() : 'N/A'}</div>
+              <div>Classified: {document.timestamps.classified ? new Date(document.timestamps.classified).toLocaleString() : 'N/A'}</div>
+              <div>Routed: {document.timestamps.routed ? new Date(document.timestamps.routed).toLocaleString() : 'N/A'}</div>
+            </div>
+          </div>
+        )}
+
         <div style={{
           marginTop: '20px',
           paddingTop: '16px',
