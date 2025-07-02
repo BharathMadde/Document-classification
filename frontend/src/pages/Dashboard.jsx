@@ -43,18 +43,47 @@ export default function Dashboard() {
     {
       title: "Processing",
       value: documents.filter(
-        (d) => d.status !== "Routed" && d.status !== "Ingested"
+        (d) => d.status !== "Routed" && d.status !== "Ingested" && d.status !== "Human Intervention"
       ).length,
       icon: "⚡",
       color: "yellow",
     },
-    { title: "Failed", value: 0, icon: "❌", color: "red" },
+    { 
+      title: "Human Intervention", 
+      value: documents.filter((d) => d.status === "Human Intervention").length, 
+      icon: "👀", 
+      color: "red" 
+    },
   ];
 
+<<<<<<< HEAD
   function formatConfidence(conf) {
     if (typeof conf !== 'number') return '-';
     return conf <= 1 ? `${(conf * 100).toFixed(1)}%` : `${conf.toFixed(1)}%`;
   }
+=======
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Ingested': return '#1e3a8a';
+      case 'Extracted': return '#1d4ed8';
+      case 'Classified': return '#2563eb';
+      case 'Routed': return '#059669';
+      case 'Human Intervention': return '#dc2626';
+      case 'Low Confidence': return '#f59e0b';
+      case 'Manual Review': return '#dc2626';
+      case 'Unclassified': return '#6b7280';
+      default: return '#6b7280';
+    }
+  };
+
+  const formatConfidence = (confidence) => {
+    if (confidence === null || confidence === undefined) return '-';
+    if (typeof confidence === 'number') {
+      return `${Math.round(confidence * 100)}%`;
+    }
+    return confidence;
+  };
+>>>>>>> 128d17d (Backend fixed)
 
   return (
     <div className="page-container">
@@ -96,7 +125,13 @@ export default function Dashboard() {
               <th style={{ textAlign: "center", padding: "8px" }}>Status</th>
               <th style={{ textAlign: "center", padding: "8px" }}>Type</th>
               <th style={{ textAlign: "center", padding: "8px" }}>
-                Confidence
+                Classification Confidence
+              </th>
+              <th style={{ textAlign: "center", padding: "8px" }}>
+                Extraction Confidence
+              </th>
+              <th style={{ textAlign: "center", padding: "8px" }}>
+                Routing Confidence
               </th>
               <th style={{ textAlign: "center", padding: "8px" }}>
                 Destination
@@ -111,6 +146,7 @@ export default function Dashboard() {
                     textAlign: "center",
                     padding: "8px",
                     verticalAlign: "middle",
+                    fontWeight: "500"
                   }}
                 >
                   {doc.name}
@@ -122,7 +158,18 @@ export default function Dashboard() {
                     verticalAlign: "middle",
                   }}
                 >
-                  {doc.status}
+                  <span style={{
+                    background: getStatusColor(doc.status),
+                    color: 'white',
+                    padding: '4px 12px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    whiteSpace: 'nowrap',
+                    display: 'inline-block',
+                  }}>
+                    {doc.status}
+                  </span>
                 </td>
                 <td
                   style={{
@@ -149,7 +196,25 @@ export default function Dashboard() {
                     verticalAlign: "middle",
                   }}
                 >
-                  {doc.destination || "-"}
+                  {formatConfidence(doc.extractionConfidence)}
+                </td>
+                <td
+                  style={{
+                    textAlign: "center",
+                    padding: "8px",
+                    verticalAlign: "middle",
+                  }}
+                >
+                  {formatConfidence(doc.routingConfidence)}
+                </td>
+                <td
+                  style={{
+                    textAlign: "center",
+                    padding: "8px",
+                    verticalAlign: "middle",
+                  }}
+                >
+                  {doc.status === "Human Intervention" ? "Human Intervention" : (doc.destination || "-")}
                 </td>
               </tr>
             ))}

@@ -32,37 +32,54 @@ const SUPPORTED_EXTENSIONS = [
 async function processDocumentWorkflow(id) {
   try {
     const start = Date.now();
-    // 1. Extract
-    await new Promise((resolve) => setTimeout(resolve, 2500)); // 2.5s delay
+    console.log(`Starting workflow for document ${id}`);
+    
+    // 1. Extract text with enhanced OCR and AI
+    console.log(`Step 1: Extracting text from document ${id}`);
+    await new Promise((resolve) => setTimeout(resolve, 2000)); // 2s delay
     try {
-      await axios.post(`${BACKEND_URL}/api/extract`, { id });
+      const extractResponse = await axios.post(`${BACKEND_URL}/api/extract`, { id });
+      console.log(`Extraction completed for ${id}:`, extractResponse.data.status);
+      
+      // Check if extraction was successful
+      if (extractResponse.data.status === "Human Intervention") {
+        console.log(`Document ${id} sent to human intervention due to extraction failure`);
+        return; // Stop workflow if extraction failed
+      }
     } catch (e) {
-      console.error("Extract error", e.message);
+      console.error("Extract error for", id, e.message);
+      // Continue with workflow even if extraction fails
     }
-    // 2. Classify
-    await new Promise((resolve) => setTimeout(resolve, 2500)); // 2.5s delay
+    
+    // 2. Classify document based on extracted content
+    console.log(`Step 2: Classifying document ${id}`);
+    await new Promise((resolve) => setTimeout(resolve, 3000)); // 3s delay for AI processing
     try {
-      await axios.post(`${BACKEND_URL}/api/classify`, { id });
+      const classifyResponse = await axios.post(`${BACKEND_URL}/api/classify`, { id });
+      console.log(`Classification completed for ${id}:`, classifyResponse.data.type, classifyResponse.data.confidence);
     } catch (e) {
-      console.error("Classify error", e.message);
+      console.error("Classify error for", id, e.message);
     }
-    // 3. Route
-    await new Promise((resolve) => setTimeout(resolve, 2500)); // 2.5s delay
+    
+    // 3. Route document based on classification
+    console.log(`Step 3: Routing document ${id}`);
+    await new Promise((resolve) => setTimeout(resolve, 2000)); // 2s delay
     try {
-      // Find the document and pass its confidence to the router
-      const doc = documents.find((d) => d.id === id);
-      await axios.post(`${BACKEND_URL}/api/route`, { id, confidence: doc?.confidence });
+      const routeResponse = await axios.post(`${BACKEND_URL}/api/route`, { id });
+      console.log(`Routing completed for ${id}:`, routeResponse.data.destination, routeResponse.data.confidence);
     } catch (e) {
-      console.error("Route error", e.message);
+      console.error("Route error for", id, e.message);
     }
-    // Ensure total time does not exceed 10-12s
+    
+    // Ensure minimum total time for user experience
     const elapsed = Date.now() - start;
-    if (elapsed < 10000) {
-      await new Promise((resolve) => setTimeout(resolve, 10000 - elapsed));
+    if (elapsed < 8000) {
+      await new Promise((resolve) => setTimeout(resolve, 8000 - elapsed));
     }
+    
     console.log(`Workflow for ${id} completed in ${Date.now() - start}ms`);
   } catch (err) {
-    console.error("Auto workflow error:", err.message);
+    console.error("Auto workflow error for", id, err.message);
   }
 }
 
@@ -325,4 +342,4 @@ exports.updateDocument = (id, updates) => {
     }
   }
   return doc;
-}; 
+};

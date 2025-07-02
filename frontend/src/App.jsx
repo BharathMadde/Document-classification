@@ -40,6 +40,7 @@ export default function App() {
   const [lockedSections, setLockedSections] = useState(["ingest", "extract", "classify", "route", "human"]);
   const [unlockTarget, setUnlockTarget] = useState(null);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [routeDestination, setRouteDestination] = useState(null);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -135,9 +136,9 @@ export default function App() {
       ingest: <Ingest />,
       extract: <Extract />,
       classify: <Classify />,
-      route: <Route />,
+      route: <Route routeDestination={routeDestination} setRouteDestination={setRouteDestination} />,
       analytics: <Analytics />,
-      human: <HumanIntervention />,
+      human: <HumanIntervention setCurrentPage={setCurrentPage} setRouteDestination={setRouteDestination} />,
     };
 
     if (isLimitedUser && lockedSections.includes(currentPage)) {

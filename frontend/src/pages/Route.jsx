@@ -304,7 +304,7 @@ const DocumentPreview = ({ document, onClose }) => {
   );
 };
 
-export default function Route() {
+export default function Route({ routeDestination, setRouteDestination }) {
   const [selectedId, setSelectedId] = useState("");
   const [isRouting, setIsRouting] = useState(false);
   const [result, setResult] = useState(null);
@@ -513,10 +513,15 @@ export default function Route() {
             doc.destination === "Manual Review" ||
             doc.status === "Human Intervention"
         );
+      } else if (dest.name === "Analytics Dashboard") {
+        // Special case: Analytics Dashboard should include destination === 'Dashboard' and status === 'Routed'
+        grouped[dest.name] = documents.filter(
+          (doc) => doc.destination === "Dashboard" && doc.status === "Routed"
+        );
       } else {
         // Regular destination grouping
         grouped[dest.name] = documents.filter(
-          (doc) => doc.destination === dest.name
+          (doc) => doc.destination === dest.name && doc.status === "Routed"
         );
       }
     });
@@ -524,6 +529,18 @@ export default function Route() {
   };
 
   const documentsByDestination = getDocumentsByDestination();
+
+  // Open the correct destination card if routeDestination is set
+  useEffect(() => {
+    if (routeDestination) {
+      const dest = routingDestinations.find(d => d.name === routeDestination);
+      if (dest) {
+        setSelectedRoute(dest);
+        if (setRouteDestination) setRouteDestination(null); // reset after opening
+      }
+    }
+    // eslint-disable-next-line
+  }, [routeDestination]);
 
   // If a specific route is selected, show its documents
   if (selectedRoute) {
