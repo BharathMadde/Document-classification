@@ -2,234 +2,187 @@ const fs = require("fs");
 const path = require("path");
 const { updateDocument } = require("./ingestor");
 const Tesseract = require('tesseract.js');
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Enhanced OCR simulation that generates realistic data based on file content
-const processDocumentContent = (filePath, fileName) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Generate unique data based on file name and content
-      const fileExt = path.extname(fileName).toLowerCase();
-      const baseName = path.basename(fileName, fileExt);
-      const timestamp = Date.now();
+const genAI = new GoogleGenerativeAI("AIzaSyBrA0LGtMg26-vYg_6qKTxyQK2cn6ZWBVs");
 
-      // Different content based on file type and name
-      let extractedText = "";
-      let entities = {};
+// Enhanced text extraction with multiple fallback strategies
+const extractTextFromFile = async (filePath, fileName) => {
+  const ext = path.extname(fileName).toLowerCase();
+  let extractedText = '';
+  let extractionMethod = '';
+  let confidence = 0.5;
 
-      if (fileName.toLowerCase().includes("invoice")) {
-        extractedText = `INVOICE #${Math.floor(Math.random() * 10000) + 1000}
-Date: ${new Date().toISOString().split("T")[0]}
-Due Date: ${
-          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split("T")[0]
+  try {
+    // Handle different file types with appropriate extraction methods
+    if ([".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff"].includes(ext)) {
+      // Image files - use OCR
+      console.log(`Extracting text from image: ${fileName}`);
+      const { data: { text } } = await Tesseract.recognize(filePath, 'eng', {
+        logger: m => console.log(m)
+      });
+      extractedText = text.trim();
+      extractionMethod = 'OCR';
+      confidence = extractedText.length > 10 ? 0.8 : 0.3;
+      
+    } else if (ext === ".pdf") {
+      // PDF files - try text extraction first, then OCR if needed
+      console.log(`Extracting text from PDF: ${fileName}`);
+      try {
+        const dataBuffer = fs.readFileSync(filePath);
+        const pdfData = await pdfParse(dataBuffer);
+        extractedText = pdfData.text.trim();
+        extractionMethod = 'PDF Text Extraction';
+        confidence = 0.9;
+        
+        // If no text found, try OCR
+        if (!extractedText || extractedText.length < 10) {
+          console.log(`No text found in PDF, trying OCR: ${fileName}`);
+          const { data: { text } } = await Tesseract.recognize(filePath, 'eng');
+          extractedText = text.trim();
+          extractionMethod = 'PDF OCR';
+          confidence = extractedText.length > 10 ? 0.7 : 0.3;
         }
-Company: ${baseName} Corp
-Address: 123 Business St, City, State 12345
-Phone: (555) ${Math.floor(Math.random() * 900) + 100}-${
-          Math.floor(Math.random() * 9000) + 1000
-        }
-
-Description: Professional Services
-Amount: $${(Math.random() * 5000 + 100).toFixed(2)}
-Tax: $${(Math.random() * 500 + 50).toFixed(2)}
-Total: $${(Math.random() * 6000 + 200).toFixed(2)}
-
-Payment Terms: Net 30
-Invoice ID: INV-${timestamp}`;
-
-        entities = {
-          invoice_number: `INV-${timestamp}`,
-          date: new Date().toISOString().split("T")[0],
-          due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split("T")[0],
-          company: `${baseName} Corp`,
-          amount: (Math.random() * 5000 + 100).toFixed(2),
-          tax: (Math.random() * 500 + 50).toFixed(2),
-          total: (Math.random() * 6000 + 200).toFixed(2),
-        };
-      } else if (fileName.toLowerCase().includes("contract")) {
-        extractedText = `CONTRACT AGREEMENT
-Contract ID: CON-${timestamp}
-Date: ${new Date().toISOString().split("T")[0]}
-Effective Date: ${new Date().toISOString().split("T")[0]}
-Expiration Date: ${
-          new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split("T")[0]
-        }
-
-PARTIES:
-Client: ${baseName} Corporation
-Address: 456 Corporate Ave, Business City, BC 67890
-Contact: John Smith, CEO
-Email: john.smith@${baseName.toLowerCase()}.com
-
-Vendor: Professional Services Inc.
-Address: 789 Service Blvd, Vendor City, VC 54321
-Contact: Jane Doe, Director
-Email: jane.doe@proservices.com
-
-SCOPE OF WORK:
-Professional consulting services including analysis, planning, and implementation support.
-
-TERM: 12 months
-VALUE: $${(Math.random() * 50000 + 10000).toFixed(2)}`;
-
-        entities = {
-          contract_id: `CON-${timestamp}`,
-          date: new Date().toISOString().split("T")[0],
-          client: `${baseName} Corporation`,
-          vendor: "Professional Services Inc.",
-          term: "12 months",
-          value: (Math.random() * 50000 + 10000).toFixed(2),
-        };
-      } else if (fileName.toLowerCase().includes("receipt")) {
-        extractedText = `RECEIPT
-Receipt #: RCP-${timestamp}
-Date: ${new Date().toISOString().split("T")[0]}
-Time: ${new Date().toLocaleTimeString()}
-Store: ${baseName} Store
-Location: 321 Retail Rd, Shopping City, SC 13579
-
-Items:
-1. Office Supplies - $${(Math.random() * 100 + 20).toFixed(2)}
-2. Equipment - $${(Math.random() * 500 + 100).toFixed(2)}
-3. Services - $${(Math.random() * 200 + 50).toFixed(2)}
-
-Subtotal: $${(Math.random() * 800 + 200).toFixed(2)}
-Tax: $${(Math.random() * 100 + 20).toFixed(2)}
-Total: $${(Math.random() * 1000 + 300).toFixed(2)}
-
-Payment Method: Credit Card
-Card: **** **** **** ${Math.floor(Math.random() * 9000) + 1000}`;
-
-        entities = {
-          receipt_number: `RCP-${timestamp}`,
-          date: new Date().toISOString().split("T")[0],
-          store: `${baseName} Store`,
-          subtotal: (Math.random() * 800 + 200).toFixed(2),
-          tax: (Math.random() * 100 + 20).toFixed(2),
-          total: (Math.random() * 1000 + 300).toFixed(2),
-        };
-      } else if (fileName.toLowerCase().includes("report")) {
-        extractedText = `BUSINESS REPORT
-Report ID: RPT-${timestamp}
-Generated: ${new Date().toISOString().split("T")[0]}
-Department: ${baseName} Division
-Prepared By: Analytics Team
-
-EXECUTIVE SUMMARY:
-This report provides comprehensive analysis of ${baseName} operations for Q${
-          Math.floor(Math.random() * 4) + 1
-        } ${new Date().getFullYear()}.
-
-KEY METRICS:
-Revenue: $${(Math.random() * 1000000 + 100000).toFixed(2)}
-Expenses: $${(Math.random() * 800000 + 80000).toFixed(2)}
-Profit: $${(Math.random() * 300000 + 50000).toFixed(2)}
-Growth Rate: ${(Math.random() * 25 + 5).toFixed(1)}%
-
-RECOMMENDATIONS:
-1. Optimize operational efficiency
-2. Increase market presence
-3. Enhance customer satisfaction
-4. Implement cost controls`;
-
-        entities = {
-          report_id: `RPT-${timestamp}`,
-          date: new Date().toISOString().split("T")[0],
-          department: `${baseName} Division`,
-          revenue: (Math.random() * 1000000 + 100000).toFixed(2),
-          expenses: (Math.random() * 800000 + 80000).toFixed(2),
-          profit: (Math.random() * 300000 + 50000).toFixed(2),
-        };
-      } else {
-        // Generic document processing
-        extractedText = `DOCUMENT: ${fileName}
-Document ID: DOC-${timestamp}
-Date: ${new Date().toISOString().split("T")[0]}
-Type: ${fileExt.toUpperCase()} Document
-Size: ${Math.floor(Math.random() * 1000 + 100)} KB
-
-Content Summary:
-This document contains information related to ${baseName} operations.
-Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}.
-
-Key Information:
-- Document Type: ${fileExt.toUpperCase()}
-- Processing Date: ${new Date().toISOString()}
-- Reference: ${baseName}-${timestamp}`;
-
-        entities = {
-          document_id: `DOC-${timestamp}`,
-          date: new Date().toISOString().split("T")[0],
-          type: fileExt.toUpperCase(),
-          reference: `${baseName}-${timestamp}`,
-        };
+      } catch (pdfErr) {
+        console.log(`PDF text extraction failed, trying OCR: ${fileName}`);
+        const { data: { text } } = await Tesseract.recognize(filePath, 'eng');
+        extractedText = text.trim();
+        extractionMethod = 'PDF OCR Fallback';
+        confidence = extractedText.length > 10 ? 0.6 : 0.3;
       }
+      
+    } else if ([".docx", ".doc"].includes(ext)) {
+      // Word documents
+      console.log(`Extracting text from Word document: ${fileName}`);
+      try {
+        const result = await mammoth.extractRawText({ path: filePath });
+        extractedText = result.value.trim();
+        extractionMethod = 'Word Document';
+        confidence = 0.9;
+        
+        // If no text found, try OCR
+        if (!extractedText || extractedText.length < 10) {
+          console.log(`No text found in Word doc, trying OCR: ${fileName}`);
+          const { data: { text } } = await Tesseract.recognize(filePath, 'eng');
+          extractedText = text.trim();
+          extractionMethod = 'Word OCR';
+          confidence = extractedText.length > 10 ? 0.7 : 0.3;
+        }
+      } catch (wordErr) {
+        console.log(`Word extraction failed, trying OCR: ${fileName}`);
+        const { data: { text } } = await Tesseract.recognize(filePath, 'eng');
+        extractedText = text.trim();
+        extractionMethod = 'Word OCR Fallback';
+        confidence = extractedText.length > 10 ? 0.6 : 0.3;
+      }
+      
+    } else if (ext === ".txt") {
+      // Plain text files
+      console.log(`Reading text file: ${fileName}`);
+      extractedText = fs.readFileSync(filePath, 'utf8').trim();
+      extractionMethod = 'Plain Text';
+      confidence = 1.0;
+      
+    } else {
+      // Unknown file type - try OCR as last resort
+      console.log(`Unknown file type, trying OCR: ${fileName}`);
+      try {
+        const { data: { text } } = await Tesseract.recognize(filePath, 'eng');
+        extractedText = text.trim();
+        extractionMethod = 'OCR for Unknown Type';
+        confidence = extractedText.length > 10 ? 0.5 : 0.2;
+      } catch (ocrErr) {
+        extractedText = '';
+        extractionMethod = 'Failed';
+        confidence = 0.0;
+      }
+    }
 
-      resolve({ extractedText, entities });
-    }, 10); // 10ms for fast processing
-  });
+    // If we still have no text, try Gemini Vision API for images
+    if ((!extractedText || extractedText.length < 10) && 
+        [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff"].includes(ext)) {
+      console.log(`Trying Gemini Vision API for: ${fileName}`);
+      try {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const imageData = fs.readFileSync(filePath);
+        const base64Image = imageData.toString('base64');
+        
+        const prompt = `Extract all text content from this image. If there's no readable text, describe what you see in the image. Return only the extracted text or description.`;
+        
+        const result = await model.generateContent([
+          prompt,
+          {
+            inlineData: {
+              data: base64Image,
+              mimeType: `image/${ext.slice(1)}`
+            }
+          }
+        ]);
+        
+        const geminiText = result.response.text().trim();
+        if (geminiText && geminiText.length > 5) {
+          extractedText = geminiText;
+          extractionMethod = 'Gemini Vision API';
+          confidence = 0.8;
+        }
+      } catch (geminiErr) {
+        console.log(`Gemini Vision API failed: ${geminiErr.message}`);
+      }
+    }
+
+    console.log(`Extraction completed for ${fileName}: ${extractionMethod}, Confidence: ${confidence}, Text length: ${extractedText.length}`);
+
+  } catch (err) {
+    console.error(`Extraction error for ${fileName}:`, err);
+    extractedText = '';
+    extractionMethod = 'Failed';
+    confidence = 0.0;
+  }
+
+  return { 
+    extractedText, 
+    extractionMethod, 
+    confidence,
+    entities: {} // Will be enhanced later if needed
+  };
 };
 
-// Helper to detect tables in text (simple heuristic: lines with multiple columns separated by tabs or multiple spaces)
-function detectTables(text) {
-  const lines = text.split('\n');
-  const tables = [];
-  let currentTable = [];
-  for (const line of lines) {
-    if (/\t|\s{2,}/.test(line)) {
-      currentTable.push(line);
-    } else {
-      if (currentTable.length > 1) {
-        tables.push([...currentTable]);
-        currentTable = [];
-      } else {
-        currentTable = [];
-      }
-    }
+// Enhanced entity extraction using Gemini API
+const extractEntities = async (extractedText, fileName) => {
+  if (!extractedText || extractedText.length < 10) {
+    return {};
   }
-  if (currentTable.length > 1) tables.push(currentTable);
-  return tables;
-}
 
-// Unified endpoint for file upload, text extraction, and table detection
-exports.extractAndAnalyzeDocument = async (req, res) => {
   try {
-    if (!req.files || !req.files.document) {
-      return res.status(400).json({ success: false, error: 'No document uploaded' });
-    }
-    const doc = req.files.document;
-    const fileName = doc.name;
-    const ext = path.extname(fileName).toLowerCase();
-    const tempPath = path.join(__dirname, '../../uploaded_docs', `${Date.now()}_${fileName}`);
-    await doc.mv(tempPath);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const prompt = `Extract key entities from this document text. Return a JSON object with these fields if found:
+    - amount: monetary amounts
+    - date: dates mentioned
+    - company: company names
+    - person: person names
+    - invoice_number: invoice or reference numbers
+    - document_type: type of document (invoice, receipt, contract, etc.)
+    
+    Text: ${extractedText.substring(0, 2000)} // Limit to first 2000 chars
+    
+    Return only valid JSON.`;
 
-    let extractedText = '';
-    let tables = [];
-    if ([".png", ".jpg", ".jpeg", ".gif"].includes(ext)) {
-      // OCR for images
-      const { data: { text } } = await Tesseract.recognize(tempPath, 'eng');
-      extractedText = text;
-      tables = detectTables(text);
-    } else {
-      // For text-based docs, read as text
-      extractedText = fs.readFileSync(tempPath, 'utf8');
-      tables = detectTables(extractedText);
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text().trim();
+    
+    // Try to parse JSON response
+    try {
+      const entities = JSON.parse(responseText);
+      return entities;
+    } catch (parseErr) {
+      console.log('Failed to parse Gemini entities response:', responseText);
+      return {};
     }
-
-    res.json({
-      success: true,
-      extractedText,
-      tables,
-      fileName,
-      message: 'Extraction and analysis complete.'
-    });
   } catch (err) {
-    res.status(500).json({ success: false, error: 'Extraction failed', details: err.message });
+    console.log('Entity extraction failed:', err.message);
+    return {};
   }
 };
 
@@ -264,33 +217,49 @@ exports.extractText = async (req, res) => {
     // Get file name from path
     const fileName = path.basename(filePath);
 
-    // Process document content
-    const { extractedText, entities } = await processDocumentContent(
-      filePath,
-      fileName
-    );
+    // Extract text with enhanced methods
+    const { extractedText, extractionMethod, confidence } = await extractTextFromFile(filePath, fileName);
+    
+    // Extract entities if we have text
+    const entities = await extractEntities(extractedText, fileName);
 
-    // Update document with extracted data and message
+    // Determine extraction status and message
+    let status = "Extracted";
+    let userMessage = "";
+    
+    if (extractedText && extractedText.length > 10) {
+      userMessage = `✅ Text extracted using ${extractionMethod}! Found ${Object.keys(entities).length} entities.`;
+    } else if (extractedText && extractedText.length > 0) {
+      status = "Low Confidence";
+      userMessage = `⚠️ Limited text extracted using ${extractionMethod}. Consider manual review.`;
+    } else {
+      status = "Human Intervention";
+      userMessage = `❌ No text could be extracted. Sent for human intervention.`;
+    }
+
+    // Update document with extracted data
     const ingestor = require("./ingestor");
     const doc = ingestor.updateDocument(id, {
       entities,
-      status: "Extracted",
+      status,
       extractedText,
+      extractionMethod,
+      extractionConfidence: confidence,
       messages: {
         ...(ingestor.documents.find((d) => d.id === id)?.messages || {}),
-        extract: `✅ Text extracted from "${fileName}"! Found ${
-          Object.keys(entities).length
-        } details.`,
+        extract: userMessage,
       },
     });
 
     res.json({
       success: true,
-      message: "Extracted successfully",
+      message: "Extraction completed",
       userMessage: doc.messages.extract,
       extractedText,
       entities,
-      status: "Extracted",
+      extractionMethod,
+      extractionConfidence: confidence,
+      status,
       documentId: id,
       fileName: fileName,
       messages: doc.messages,
@@ -302,5 +271,33 @@ exports.extractText = async (req, res) => {
       error: "Extraction failed",
       userMessage: "❌ Failed to extract text. Please try again.",
     });
+  }
+};
+
+// Legacy function for backward compatibility
+exports.extractAndAnalyzeDocument = async (req, res) => {
+  try {
+    if (!req.files || !req.files.document) {
+      return res.status(400).json({ success: false, error: 'No document uploaded' });
+    }
+    const doc = req.files.document;
+    const fileName = doc.name;
+    const tempPath = path.join(__dirname, '../../uploaded_docs', `${Date.now()}_${fileName}`);
+    await doc.mv(tempPath);
+
+    const { extractedText, extractionMethod, confidence } = await extractTextFromFile(tempPath, fileName);
+    const entities = await extractEntities(extractedText, fileName);
+
+    res.json({
+      success: true,
+      extractedText,
+      entities,
+      extractionMethod,
+      extractionConfidence: confidence,
+      fileName,
+      message: 'Extraction and analysis complete.'
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Extraction failed', details: err.message });
   }
 };

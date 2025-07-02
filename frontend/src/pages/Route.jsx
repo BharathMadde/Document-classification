@@ -257,6 +257,27 @@ const DocumentPreview = ({ document, onClose }) => {
           </div>
         )}
 
+        {document.extractedText && (
+          <div style={{ marginTop: '12px' }}>
+            <h4 style={{ margin: '0 0 8px 0', color: 'var(--text-primary)', fontSize: '15px', fontWeight: '600' }}>📝 Extracted Text</h4>
+            <div style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-color)', maxHeight: 120, overflowY: 'auto' }}>
+              <pre style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>{document.extractedText}</pre>
+            </div>
+          </div>
+        )}
+
+        {document.timestamps && (
+          <div style={{ marginTop: '12px' }}>
+            <h4 style={{ margin: '0 0 8px 0', color: 'var(--text-primary)', fontSize: '15px', fontWeight: '600' }}>⏱️ Timestamps</h4>
+            <div style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+              <div>Ingested: {document.timestamps.ingested ? new Date(document.timestamps.ingested).toLocaleString() : 'N/A'}</div>
+              <div>Extracted: {document.timestamps.extracted ? new Date(document.timestamps.extracted).toLocaleString() : 'N/A'}</div>
+              <div>Classified: {document.timestamps.classified ? new Date(document.timestamps.classified).toLocaleString() : 'N/A'}</div>
+              <div>Routed: {document.timestamps.routed ? new Date(document.timestamps.routed).toLocaleString() : 'N/A'}</div>
+            </div>
+          </div>
+        )}
+
         <div style={{
           marginTop: '20px',
           paddingTop: '16px',
@@ -283,7 +304,7 @@ const DocumentPreview = ({ document, onClose }) => {
   );
 };
 
-export default function Route() {
+export default function Route({ routeDestination, setRouteDestination }) {
   const [selectedId, setSelectedId] = useState("");
   const [isRouting, setIsRouting] = useState(false);
   const [result, setResult] = useState(null);
@@ -492,10 +513,15 @@ export default function Route() {
             doc.destination === "Manual Review" ||
             doc.status === "Human Intervention"
         );
+      } else if (dest.name === "Analytics Dashboard") {
+        // Special case: Analytics Dashboard should include destination === 'Dashboard' and status === 'Routed'
+        grouped[dest.name] = documents.filter(
+          (doc) => doc.destination === "Dashboard" && doc.status === "Routed"
+        );
       } else {
         // Regular destination grouping
         grouped[dest.name] = documents.filter(
-          (doc) => doc.destination === dest.name
+          (doc) => doc.destination === dest.name && doc.status === "Routed"
         );
       }
     });
@@ -503,6 +529,18 @@ export default function Route() {
   };
 
   const documentsByDestination = getDocumentsByDestination();
+
+  // Open the correct destination card if routeDestination is set
+  useEffect(() => {
+    if (routeDestination) {
+      const dest = routingDestinations.find(d => d.name === routeDestination);
+      if (dest) {
+        setSelectedRoute(dest);
+        if (setRouteDestination) setRouteDestination(null); // reset after opening
+      }
+    }
+    // eslint-disable-next-line
+  }, [routeDestination]);
 
   // If a specific route is selected, show its documents
   if (selectedRoute) {
@@ -692,7 +730,7 @@ export default function Route() {
   return (
     <div className="page-container">
       <div className="dashboard-header">
-        <h1 className="dashboard-title">
+        <h1 className="dashboard-title section-darkblue-light">
           <span style={{ marginRight: "12px" }}>🚀</span>
           Intelligent Document Routing
         </h1>

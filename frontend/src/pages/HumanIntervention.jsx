@@ -1,7 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { listDocuments, routeDocument } from '../api';
 
-export default function HumanIntervention() {
+// Mapping from UI display names to backend routing values
+const DESTINATION_MAP = {
+  'Analytics Dashboard': 'Dashboard',
+  'Expense Tracker': 'Expense Tracker',
+  'Financial Review': 'Financial Review',
+  'Legal DMS': 'Legal DMS',
+  'Manual Review': 'Manual Review',
+  'Slack': 'Slack',
+  'Unclassified': 'Unclassified',
+  // Add more mappings as needed
+};
+
+export default function HumanIntervention({ setCurrentPage, setRouteDestination }) {
   const [documents, setDocuments] = useState([]);
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [isRouting, setIsRouting] = useState(false);
@@ -50,23 +62,14 @@ export default function HumanIntervention() {
     try {
       const res = await routeDocument(docId, destination);
       setRoutingResult(res);
-      // Refresh the documents list
-      const response = await listDocuments();
-      let docs = [];
-      if (response.success && Array.isArray(response.documents)) {
-        docs = response.documents;
-      } else if (Array.isArray(response)) {
-        docs = response;
-      }
-      const interventionDocs = docs.filter(doc => 
-        doc.status === 'Human Intervention' || 
-        doc.status === 'Ingested' || 
-        doc.status === 'Extracted' ||
-        !doc.destination ||
-        doc.destination === 'Manual Review'
-      );
-      setDocuments(interventionDocs);
+      // Remove the routed document from the local state immediately
+      setDocuments(prevDocs => prevDocs.filter(doc => doc.id !== docId));
       setSelectedDoc(null);
+      // Optionally, update the route page if needed
+      if (setCurrentPage && setRouteDestination) {
+        setRouteDestination(destination);
+        setCurrentPage('route');
+      }
     } catch (err) {
       setRoutingResult({ success: false, userMessage: err.message });
     } finally {
@@ -84,13 +87,21 @@ export default function HumanIntervention() {
     }
   };
 
+  function formatConfidence(conf) {
+    if (typeof conf !== 'number') return 'N/A';
+    return conf <= 1 ? `${(conf * 100).toFixed(1)}%` : `${conf.toFixed(1)}%`;
+  }
+
   return (
     <div className="page-container">
       <div className="dashboard-header">
-        <h1 className="dashboard-title">
+        <h1 className="dashboard-title section-darkblue-light">
           <span style={{ marginRight: '12px' }}>🧑‍💼</span>
           Human Intervention & Manual Routing
         </h1>
+        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e3a8a', margin: '8px 0 0 0', letterSpacing: '1px' }}>
+          <span role="img" aria-label="intervention">🛠️</span> Human Intervention
+        </div>
         <p className="dashboard-subtitle">
           Review documents that AI couldn't process and manually route them to appropriate destinations.
         </p>
@@ -136,22 +147,36 @@ export default function HumanIntervention() {
                   </div>
                   <div className="feature-title">
                     {doc.name}
-                    <span style={{ 
-                      marginLeft: '8px', 
-                      fontSize: '0.75rem', 
-                      background: getStatusColor(doc.status), 
-                      color: 'white',
-                      padding: '2px 6px',
-                      borderRadius: '8px'
-                    }}>
-                      {doc.status}
-                    </span>
+                    {doc.status === 'Human Intervention' ? (
+                      <span style={{
+                        marginLeft: '8px',
+                        fontSize: '0.85rem',
+                        background: getStatusColor(doc.status),
+                        color: 'white',
+                        padding: '4px 12px',
+                        borderRadius: '12px',
+                        whiteSpace: 'nowrap',
+                        display: 'inline-block',
+                        fontWeight: 600
+                      }}>
+                        Human Intervention
+                      </span>
+                    ) : null}
                   </div>
                 </div>
                 <div className="feature-description">
                   <div><strong>Type:</strong> {doc.type || 'Unknown'}</div>
-                  <div><strong>Confidence:</strong> {doc.confidence ? `${(doc.confidence * 100).toFixed(1)}%` : 'N/A'}</div>
+                  <div><strong>Classification Confidence:</strong> {doc.confidence ? `${(doc.confidence * 100).toFixed(1)}%` : 'N/A'}</div>
+                  <div><strong>Extraction Confidence:</strong> {doc.extractionConfidence ? `${(doc.extractionConfidence * 100).toFixed(1)}%` : 'N/A'}</div>
+                  <div><strong>Routing Confidence:</strong> {doc.routingConfidence ? `${(doc.routingConfidence * 100).toFixed(1)}%` : 'N/A'}</div>
+                  <div><strong>Extraction Method:</strong> {doc.extractionMethod || 'Unknown'}</div>
                   <div><strong>Uploaded:</strong> {doc.timestamps?.ingested ? new Date(doc.timestamps.ingested).toLocaleDateString() : 'Unknown'}</div>
+                  {doc.classificationReason && (
+                    <div><strong>Classification Reason:</strong> {doc.classificationReason}</div>
+                  )}
+                  {doc.routingReason && (
+                    <div><strong>Routing Reason:</strong> {doc.routingReason}</div>
+                  )}
                   <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
                     <a href={doc.path.replace(/\\/g, '/').replace(/^.*uploaded_docs\//, '/uploaded_docs/')} download target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>
                       Download
@@ -172,59 +197,158 @@ export default function HumanIntervention() {
 
       {/* Manual Routing Modal */}
       {selectedDoc && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: 'var(--bg-secondary)',
-            borderRadius: '16px',
-            padding: '32px',
-            maxWidth: '600px',
-            width: '90%',
-            maxHeight: '80vh',
-            overflow: 'auto',
-            boxShadow: 'var(--shadow-neumorphism)'
-          }}>
+        <div
+          onClick={e => { if (e.target === e.currentTarget) setSelectedDoc(null); }}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}
+        >
+          <div
+            style={{
+              background: 'var(--bg-secondary)',
+              borderRadius: '16px',
+              padding: '32px',
+              maxWidth: '900px',
+              width: '95%',
+              maxHeight: '80vh',
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              boxShadow: 'var(--shadow-neumorphism)',
+              position: 'relative',
+              scrollbarColor: '#2563eb var(--bg-primary)',
+              scrollbarWidth: 'thin',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <style>{`
+              .modal-scrollbar::-webkit-scrollbar {
+                width: 8px;
+                background: var(--bg-primary);
+              }
+              .modal-scrollbar::-webkit-scrollbar-thumb {
+                background: #2563eb;
+                border-radius: 8px;
+              }
+            `}</style>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ margin: 0 }}>Manual Routing: {selectedDoc.name}</h2>
+              <h2 style={{ margin: 0, color: '#1e3a8a', fontWeight: 800, fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span role="img" aria-label="doc">📄</span> {selectedDoc.name}
+              </h2>
               <button 
                 onClick={() => setSelectedDoc(null)}
                 style={{
                   background: 'none',
                   border: 'none',
-                  fontSize: '24px',
+                  fontSize: '2rem',
                   cursor: 'pointer',
-                  color: 'var(--text-secondary)'
+                  color: '#1e3a8a',
+                  fontWeight: 700
                 }}
+                title="Close"
               >
                 ×
               </button>
             </div>
-
             <div style={{ marginBottom: '24px' }}>
-              <h3>Document Details</h3>
+              <h3 style={{ color: '#2563eb', fontWeight: 700 }}>Document Preview</h3>
+              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '12px', marginBottom: '16px', textAlign: 'center', boxShadow: '0 2px 8px rgba(30,64,175,0.08)' }}>
+                {selectedDoc.name && /\.(png|jpg|jpeg|gif)$/i.test(selectedDoc.name) ? (
+                  <img
+                    src={(() => {
+                      const path = selectedDoc.path || selectedDoc.filePath || '';
+                      const fileName = path.split(/[/\\]/).pop();
+                      return '/uploaded_docs/' + fileName;
+                    })()}
+                    alt="Document Preview"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '60vh',
+                      borderRadius: '8px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                      display: 'block',
+                      margin: '0 auto'
+                    }}
+                  />
+                ) : selectedDoc.name && /\.(pdf)$/i.test(selectedDoc.name) ? (
+                  <iframe
+                    src={(() => {
+                      const path = selectedDoc.path || selectedDoc.filePath || '';
+                      const fileName = path.split(/[/\\]/).pop();
+                      return '/uploaded_docs/' + fileName;
+                    })()}
+                    title="PDF Preview"
+                    style={{ width: '100%', height: '250px', border: 'none', borderRadius: '8px', background: 'white' }}
+                  />
+                ) : selectedDoc.extractedText ? (
+                  <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0, textAlign: 'left', fontFamily: 'monospace', fontSize: '1rem', color: '#1e3a8a' }}>{selectedDoc.extractedText}</pre>
+                ) : (
+                  <span style={{ color: 'var(--text-secondary)' }}>No preview available.</span>
+                )}
+                <a
+                  href={(() => {
+                    const path = selectedDoc.path || selectedDoc.filePath || '';
+                    const fileName = path.split(/[/\\]/).pop();
+                    return '/uploaded_docs/' + fileName;
+                  })()}
+                  download
+                  style={{
+                    display: 'inline-block',
+                    marginTop: 16,
+                    background: '#2563eb',
+                    color: 'white',
+                    padding: '10px 24px',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                    fontSize: '1rem',
+                    boxShadow: '0 2px 8px #2563eb33',
+                    alignItems: 'center',
+                    gap: 8
+                  }}
+                >
+                  ⬇️ Download File
+                </a>
+              </div>
+            </div>
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ color: '#2563eb', fontWeight: 700 }}>Document Details</h3>
               <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
                 <div><strong>Status:</strong> {selectedDoc.status}</div>
                 <div><strong>Type:</strong> {selectedDoc.type || 'Unknown'}</div>
-                <div><strong>Confidence:</strong> {selectedDoc.confidence ? `${(selectedDoc.confidence * 100).toFixed(1)}%` : 'N/A'}</div>
+                <div><strong>Classification Confidence:</strong> {selectedDoc.confidence ? `${(selectedDoc.confidence * 100).toFixed(1)}%` : 'N/A'}</div>
+                <div><strong>Extraction Confidence:</strong> {selectedDoc.extractionConfidence ? `${(selectedDoc.extractionConfidence * 100).toFixed(1)}%` : 'N/A'}</div>
+                <div><strong>Routing Confidence:</strong> {selectedDoc.routingConfidence ? `${(selectedDoc.routingConfidence * 100).toFixed(1)}%` : 'N/A'}</div>
+                <div><strong>Extraction Method:</strong> {selectedDoc.extractionMethod || 'Unknown'}</div>
                 <div><strong>Uploaded:</strong> {selectedDoc.timestamps?.ingested ? new Date(selectedDoc.timestamps.ingested).toLocaleDateString() : 'Unknown'}</div>
-                {selectedDoc.entities && (
+                {selectedDoc.classificationReason && (
+                  <div><strong>Classification Reason:</strong> {selectedDoc.classificationReason}</div>
+                )}
+                {selectedDoc.routingReason && (
+                  <div><strong>Routing Reason:</strong> {selectedDoc.routingReason}</div>
+                )}
+                {selectedDoc.entities && Object.keys(selectedDoc.entities).length > 0 && (
                   <div><strong>Extracted Entities:</strong> {JSON.stringify(selectedDoc.entities)}</div>
                 )}
+                {selectedDoc.extractedText && (
+                  <div><strong>Extracted Text:</strong> <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{selectedDoc.extractedText}</pre></div>
+                )}
+                <div><strong>Ingested:</strong> {selectedDoc.timestamps?.ingested ? new Date(selectedDoc.timestamps.ingested).toLocaleString() : 'N/A'}</div>
+                <div><strong>Extracted:</strong> {selectedDoc.timestamps?.extracted ? new Date(selectedDoc.timestamps.extracted).toLocaleString() : 'N/A'}</div>
+                <div><strong>Classified:</strong> {selectedDoc.timestamps?.classified ? new Date(selectedDoc.timestamps.classified).toLocaleString() : 'N/A'}</div>
+                <div><strong>Routed:</strong> {selectedDoc.timestamps?.routed ? new Date(selectedDoc.timestamps.routed).toLocaleString() : 'N/A'}</div>
               </div>
             </div>
-
             <div style={{ marginBottom: '24px' }}>
-              <h3>Select Destination</h3>
+              <h3 style={{ color: '#2563eb', fontWeight: 700 }}>Select Destination</h3>
               <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>
                 Choose the appropriate destination for this document:
               </p>
@@ -233,7 +357,7 @@ export default function HumanIntervention() {
                   <div 
                     key={option.id}
                     className="feature-card"
-                    onClick={() => handleManualRoute(selectedDoc.id, option.name)}
+                    onClick={() => handleManualRoute(selectedDoc.id, DESTINATION_MAP[option.name] || option.name)}
                     style={{ 
                       cursor: isRouting ? 'not-allowed' : 'pointer',
                       opacity: isRouting ? 0.6 : 1
@@ -253,17 +377,6 @@ export default function HumanIntervention() {
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <h3>Document Preview</h3>
-              <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px', maxHeight: '200px', overflowY: 'auto' }}>
-                {selectedDoc.extractedText ? (
-                  <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>{selectedDoc.extractedText}</pre>
-                ) : (
-                  <span style={{ color: 'var(--text-secondary)' }}>No preview available.</span>
-                )}
               </div>
             </div>
 
@@ -308,12 +421,17 @@ export default function HumanIntervention() {
             <div className="stat-value">{documents.filter(d => d.status === 'Human Intervention').length}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-icon">✅</div>
-            <div className="stat-title">Manually Routed</div>
-            <div className="stat-value">0</div>
+            <div className="stat-icon">📊</div>
+            <div className="stat-title">Avg Confidence</div>
+            <div className="stat-value">
+              {documents.length > 0 
+                ? `${Math.round((documents.reduce((sum, doc) => sum + (doc.confidence || 0), 0) / documents.length) * 100)}%`
+                : '0%'
+              }
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}

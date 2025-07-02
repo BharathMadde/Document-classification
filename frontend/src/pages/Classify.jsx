@@ -23,6 +23,12 @@ function getFileExtension(filename) {
     .toLowerCase();
 }
 
+// Helper to format confidence as percentage
+function formatConfidence(conf) {
+  if (typeof conf !== 'number') return '0%';
+  return conf <= 1 ? `${(conf * 100).toFixed(1)}%` : `${conf.toFixed(1)}%`;
+}
+
 export default function Classify() {
   const [selectedId, setSelectedId] = useState("");
   const [isClassifying, setIsClassifying] = useState(false);
@@ -213,7 +219,7 @@ export default function Classify() {
   return (
     <div className="page-container">
       <div className="dashboard-header">
-        <h1 className="dashboard-title">
+        <h1 className="dashboard-title section-darkblue-light">
           <span style={{ marginRight: "12px" }}>🧠</span>
           AI Document Classification
         </h1>
@@ -484,7 +490,7 @@ export default function Classify() {
                     overflow: "hidden"
                   }}>
                     <div style={{ 
-                      width: `${result.confidence || 0}%`,
+                      width: `${result.confidence <= 1 ? result.confidence * 100 : result.confidence}%`,
                       height: "100%",
                       background: "linear-gradient(90deg, #10b981, #059669)",
                       transition: "width 0.3s ease"
@@ -496,7 +502,7 @@ export default function Classify() {
                     minWidth: "60px",
                     textAlign: "right"
                   }}>
-                    {result.confidence || 0}%
+                    {formatConfidence(result.confidence)}
                   </span>
                 </div>
                 <div style={{ 
@@ -512,7 +518,7 @@ export default function Classify() {
               </div>
             </div>
             
-            <div>
+            <div style={{ marginBottom: "20px" }}>
               <h3 style={{ 
                 marginBottom: "12px", 
                 color: "var(--text-primary)",
@@ -559,7 +565,7 @@ export default function Classify() {
                       Confidence:
                     </span>
                     <span style={{ color: "var(--text-secondary)" }}>
-                      {result.confidence || 0}%
+                      {formatConfidence(result.confidence)}
                     </span>
                   </div>
                   <div style={{ 
@@ -580,6 +586,48 @@ export default function Classify() {
                     </span>
                   </div>
                 </div>
+              </div>
+            </div>
+            
+            <div style={{ marginBottom: "20px" }}>
+              <h3 style={{ 
+                marginBottom: "12px", 
+                color: "var(--text-primary)",
+                fontSize: "16px",
+                fontWeight: "600"
+              }}>
+                📦 Routed Destination
+              </h3>
+              <div style={{ 
+                background: "var(--bg-tertiary)", 
+                padding: "16px", 
+                borderRadius: "6px",
+                border: "1px solid var(--border-color)"
+              }}>
+                <span style={{ fontWeight: "500", color: "var(--text-primary)", fontSize: "18px" }}>
+                  {result.destination || 'Not routed yet'}
+                </span>
+              </div>
+            </div>
+            <div style={{ marginBottom: "20px" }}>
+              <h3 style={{ marginBottom: "12px", color: "var(--text-primary)", fontSize: "16px", fontWeight: "600" }}>📝 Extracted Text</h3>
+              <div style={{ background: "var(--bg-tertiary)", padding: "16px", borderRadius: "6px", border: "1px solid var(--border-color)", maxHeight: 200, overflowY: 'auto' }}>
+                <pre style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>{result.extractedText || 'No extracted text available.'}</pre>
+              </div>
+            </div>
+            <div style={{ marginBottom: "20px" }}>
+              <h3 style={{ marginBottom: "12px", color: "var(--text-primary)", fontSize: "16px", fontWeight: "600" }}>🔑 Extracted Entities</h3>
+              <div style={{ background: "var(--bg-tertiary)", padding: "16px", borderRadius: "6px", border: "1px solid var(--border-color)" }}>
+                <pre style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>{result.entities ? JSON.stringify(result.entities, null, 2) : 'No entities extracted.'}</pre>
+              </div>
+            </div>
+            <div style={{ marginBottom: "20px" }}>
+              <h3 style={{ marginBottom: "12px", color: "var(--text-primary)", fontSize: "16px", fontWeight: "600" }}>⏱️ Timestamps</h3>
+              <div style={{ background: "var(--bg-tertiary)", padding: "16px", borderRadius: "6px", border: "1px solid var(--border-color)" }}>
+                <div>Ingested: {result.timestamps?.ingested ? new Date(result.timestamps.ingested).toLocaleString() : 'N/A'}</div>
+                <div>Extracted: {result.timestamps?.extracted ? new Date(result.timestamps.extracted).toLocaleString() : 'N/A'}</div>
+                <div>Classified: {result.timestamps?.classified ? new Date(result.timestamps.classified).toLocaleString() : 'N/A'}</div>
+                <div>Routed: {result.timestamps?.routed ? new Date(result.timestamps.routed).toLocaleString() : 'N/A'}</div>
               </div>
             </div>
           </div>

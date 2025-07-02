@@ -854,3 +854,31 @@ body {
     transform: scale(1);
   }
 }
+
+/* Section title dark blue for light theme */
+[data-theme="light"] .section-darkblue-light {
+  color: #1e3a8a !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: initial !important;
+}
+
+/* Custom scrollbar styles for all scrollable areas */
+::-webkit-scrollbar {
+  width: 10px;
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-primary);
+  border-radius: 8px;
+  border: 2px solid var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-secondary);
+}
+
+/* Firefox */
+html {
+  scrollbar-color: var(--accent-primary) var(--bg-secondary);
+  scrollbar-width: thin;
+}

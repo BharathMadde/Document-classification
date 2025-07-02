@@ -324,7 +324,7 @@ export default function Ingest() {
   return (
     <div className="page-container">
       <div className="dashboard-header">
-        <h1 className="dashboard-title">
+        <h1 className="dashboard-title section-darkblue-light">
           <span style={{ marginRight: "12px" }}>⬆️</span>
           AI-Powered Document Ingestion
         </h1>
@@ -600,18 +600,16 @@ export default function Ingest() {
                 <th>Name</th>
                 <th>Status</th>
                 <th>Type</th>
-                <th>Confidence</th>
                 <th>Destination</th>
               </tr>
             </thead>
             <tbody>
               {documents.map((doc) => (
-                <tr key={doc.id}>
-                  <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: 8 }}>{doc.name}</td>
-                  <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: 8 }}>{doc.status}</td>
-                  <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: 8 }}>{doc.type || "-"}</td>
-                  <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: 8 }}>{doc.confidence || "-"}</td>
-                  <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: 8 }}>{doc.destination || "-"}</td>
+                <tr key={doc.id} data-tip data-for={`ingest-doc-details-${doc.id}`}>
+                  <td style={{ textAlign: "center", padding: "8px", verticalAlign: "middle" }}>{doc.name}</td>
+                  <td style={{ textAlign: "center", padding: "8px", verticalAlign: "middle" }}>{doc.status}</td>
+                  <td style={{ textAlign: "center", padding: "8px", verticalAlign: "middle" }}>{doc.type || "-"}</td>
+                  <td style={{ textAlign: "center", padding: "8px", verticalAlign: "middle" }}>{doc.destination || "-"}</td>
                 </tr>
               ))}
             </tbody>
