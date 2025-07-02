@@ -29,8 +29,8 @@ const routeDocumentByContent = async (
   let reason = "Default routing";
   let routingConfidence = confidence;
 
-  if (docType) {
-    const typeLower = docType.toLowerCase();
+      if (docType) {
+        const typeLower = docType.toLowerCase();
 
     // Map to specific folders based on sample files structure
     if (typeLower === "report" || typeLower.includes("analytics") || typeLower.includes("dashboard")) {
@@ -38,11 +38,11 @@ const routeDocumentByContent = async (
       reason = "Analytics/Reporting document for dashboard";
       routingConfidence = Math.min(confidence, 0.95);
     } else if (typeLower === "receipt" || typeLower.includes("expense") || typeLower.includes("travel")) {
-      destination = "Expense Tracker";
+          destination = "Expense Tracker";
       reason = "Receipt/Expense document for tracking";
       routingConfidence = Math.min(confidence, 0.95);
     } else if (typeLower === "statement" || typeLower === "budget" || typeLower.includes("financial")) {
-      destination = "Financial Review";
+          destination = "Financial Review";
       reason = "Financial document for review";
       routingConfidence = Math.min(confidence, 0.95);
     } else if (typeLower === "contract" || typeLower.includes("legal") || typeLower.includes("compliance")) {
@@ -62,12 +62,12 @@ const routeDocumentByContent = async (
       destination = "Unclassified";
       reason = "Unclear document type";
       routingConfidence = 0.3;
-    } else {
-      destination = "Slack";
+          } else {
+            destination = "Slack";
       reason = "General document for team review";
       routingConfidence = Math.min(confidence, 0.6);
-    }
-  } else {
+        }
+      } else {
     destination = "Unclassified";
     reason = "No document type determined";
     routingConfidence = 0.2;

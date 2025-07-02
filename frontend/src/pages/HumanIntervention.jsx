@@ -148,11 +148,11 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
                   <div className="feature-title">
                     {doc.name}
                     {doc.status === 'Human Intervention' ? (
-                      <span style={{
-                        marginLeft: '8px',
+                    <span style={{ 
+                      marginLeft: '8px', 
                         fontSize: '0.85rem',
-                        background: getStatusColor(doc.status),
-                        color: 'white',
+                      background: getStatusColor(doc.status), 
+                      color: 'white',
                         padding: '4px 12px',
                         borderRadius: '12px',
                         whiteSpace: 'nowrap',
@@ -160,7 +160,7 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
                         fontWeight: 600
                       }}>
                         Human Intervention
-                      </span>
+                    </span>
                     ) : null}
                   </div>
                 </div>
@@ -200,26 +200,26 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
         <div
           onClick={e => { if (e.target === e.currentTarget) setSelectedDoc(null); }}
           style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
           }}
         >
           <div
             style={{
-              background: 'var(--bg-secondary)',
-              borderRadius: '16px',
-              padding: '32px',
+            background: 'var(--bg-secondary)',
+            borderRadius: '16px',
+            padding: '32px',
               maxWidth: '900px',
               width: '95%',
-              maxHeight: '80vh',
+            maxHeight: '80vh',
               overflowY: 'auto',
               overflowX: 'hidden',
               boxShadow: 'var(--shadow-neumorphism)',
@@ -434,4 +434,4 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
       </div>
     </div>
   );
-}
+} 

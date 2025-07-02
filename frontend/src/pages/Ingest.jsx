@@ -394,39 +394,39 @@ export default function Ingest() {
 
         {/* Files Upload Area */}
         {activeTab === 'files' && (
-          <div
-            className="upload-area"
+        <div
+          className="upload-area"
             onDrop={handleFilesDrop}
             onDragOver={handleFilesDragOver}
             onDragLeave={handleFilesDragLeave}
-            style={{
-              border: dragActive ? "2px solid #1e40af" : "2px dashed #2563eb",
-              background: dragActive ? "#e0e7ff" : "#f8fafc",
-              borderRadius: 8,
-              padding: 24,
-              textAlign: "center",
-              transition: "all 0.2s",
-            }}
-          >
+          style={{
+            border: dragActive ? "2px solid #1e40af" : "2px dashed #2563eb",
+            background: dragActive ? "#e0e7ff" : "#f8fafc",
+            borderRadius: 8,
+            padding: 24,
+            textAlign: "center",
+            transition: "all 0.2s",
+          }}
+        >
             <div className="upload-icon">📁</div>
             <div className="upload-title" style={{ color: '#000' }}>Upload Individual Files</div>
             <div className="upload-description" style={{ color: '#000' }}>
               Select single or multiple files, or drag & drop files here. Supports PDF, DOC, DOCX, TXT, image, MSG, and EML files
-            </div>
-            <input
-              type="file"
-              ref={fileInputRef}
+          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
               onChange={handleFilesUpload}
-              accept={SUPPORTED_EXTENSIONS.join(",")}
+            accept={SUPPORTED_EXTENSIONS.join(",")}
               multiple
-              style={{ display: "none" }}
+            style={{ display: "none" }}
               id="files-upload"
-            />
+          />
             <label htmlFor="files-upload" className="upload-button">
               {isIngesting ? "Uploading..." : "Select Files"}
-            </label>
+          </label>
             {selectedFiles.length > 0 && (
-              <div style={{ marginTop: "16px", color: "var(--text-secondary)" }}>
+            <div style={{ marginTop: "16px", color: "var(--text-secondary)" }}>
                 <div style={{ fontWeight: "600", marginBottom: "8px" }}>
                   Selected Files ({selectedFiles.length}):
                 </div>
@@ -509,21 +509,21 @@ export default function Ingest() {
                 ))}
               </div>
             )}
-          </div>
-        )}
-        {success && (
-          <div style={{ color: "green", marginTop: 8 }}>{success}</div>
-        )}
-        {error && <div style={{ color: "red", marginTop: 8 }}>{error}</div>}
-        <div
-          style={{
-            marginTop: "16px",
-            fontSize: "0.875rem",
+            </div>
+          )}
+          {success && (
+            <div style={{ color: "green", marginTop: 8 }}>{success}</div>
+          )}
+          {error && <div style={{ color: "red", marginTop: 8 }}>{error}</div>}
+          <div
+            style={{
+              marginTop: "16px",
+              fontSize: "0.875rem",
             color: "var(--text-primary)",
-          }}
-        >
-          Maximum file size: 20MB | Supported: PDF, DOC, DOCX, TXT, JPG, PNG,
-          GIF, MSG, EML
+            }}
+          >
+            Maximum file size: 20MB | Supported: PDF, DOC, DOCX, TXT, JPG, PNG,
+            GIF, MSG, EML
         </div>
       </div>
 
