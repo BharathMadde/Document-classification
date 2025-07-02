@@ -6,7 +6,6 @@ const routes = require('./routes/documents');
 const extractor = require('./services/extractor');
 const classifier = require('./services/classifier');
 const routerService = require('./services/router');
-const path = require('path');
 
 const app = express();
 app.use(cors());

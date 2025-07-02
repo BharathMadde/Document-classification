@@ -63,94 +63,6 @@ const classifyDocumentContent = async (extractedText, entities, fileName, extrac
   // If pattern matching didn't work, use AI classification
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-<<<<<<< HEAD
-    const prompt = `Classify the following document content into one of these types: Invoice, Contract, Report, Receipt, Statement, Budget, Payment, Legal, Analysis, Expense, Financial, or Unknown. Respond in the format: Type: <type> (Confidence: <confidence between 0 and 1>).\nContent:\n${contentToClassify}`;
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    // Try to extract type and confidence from the response
-    const match = text.match(/Type:\s*(\w+)(?:\s*\(Confidence:\s*([0-9.]+)\))?/i);
-    if (match) {
-      docType = match[1];
-      if (match[2]) {
-        confidence = parseFloat(match[2]);
-      } else {
-        // Estimate confidence based on strong keywords
-        const strongTypes = ["Invoice", "Contract", "Report", "Receipt", "Statement", "Budget", "Payment", "Legal", "Analysis", "Expense", "Financial"];
-        if (strongTypes.includes(docType)) {
-          confidence = 0.9;
-        } else {
-          confidence = 0.7;
-        }
-      }
-    } else {
-      // Fallback: try to find a type in the text
-      const strongTypes = ["Invoice", "Contract", "Report", "Receipt", "Statement", "Budget", "Payment", "Legal", "Analysis", "Expense", "Financial"];
-      const foundType = strongTypes.find(type => text.toLowerCase().includes(type.toLowerCase()));
-      if (foundType) {
-        docType = foundType;
-        confidence = 0.8;
-      } else {
-        docType = text.trim();
-        confidence = 0.7;
-      }
-    }
-  } catch (err) {
-    // Local fallback classification if Gemini fails
-    const fileNameLower = (fileName || "").toLowerCase();
-    if (fileNameLower.includes("invoice") || fileNameLower.includes("bill")) {
-      docType = "Invoice";
-      confidence = 0.9;
-    } else if (fileNameLower.includes("contract") || fileNameLower.includes("agreement")) {
-      docType = "Contract";
-      confidence = 0.9;
-    } else if (fileNameLower.includes("receipt")) {
-      docType = "Receipt";
-      confidence = 0.9;
-    } else if (fileNameLower.includes("report")) {
-      docType = "Report";
-      confidence = 0.9;
-    } else if (fileNameLower.includes("statement")) {
-      docType = "Statement";
-      confidence = 0.9;
-    } else if (fileNameLower.includes("budget")) {
-      docType = "Budget";
-      confidence = 0.9;
-    } else if (fileNameLower.includes("payment")) {
-      docType = "Payment";
-      confidence = 0.9;
-    } else if (fileNameLower.includes("legal") || fileNameLower.includes("compliance")) {
-      docType = "Legal";
-      confidence = 0.9;
-    } else if (fileNameLower.includes("analysis") || fileNameLower.includes("analytics")) {
-      docType = "Analysis";
-      confidence = 0.9;
-    } else if (fileNameLower.includes("expense")) {
-      docType = "Expense";
-      confidence = 0.9;
-    } else if (fileNameLower.includes("financial")) {
-      docType = "Financial";
-      confidence = 0.9;
-    } else if (entities) {
-      if (entities.invoice_number || entities.amount || entities.total) {
-        docType = "Invoice";
-        confidence = 0.7;
-      } else if (entities.contract_id || entities.client || entities.vendor) {
-        docType = "Contract";
-        confidence = 0.7;
-      } else if (entities.receipt_number || entities.store || entities.subtotal) {
-        docType = "Receipt";
-        confidence = 0.7;
-      } else if (entities.report_id || entities.department || entities.revenue) {
-        docType = "Report";
-        confidence = 0.7;
-      } else if (entities.document_id) {
-        docType = "Document";
-        confidence = 0.7;
-      }
-    }
-    // else keep as Unknown with 0.5
-=======
-    
     // Create a comprehensive prompt for classification
     const prompt = `Analyze this document content and classify it into one of these specific types:
 
@@ -187,18 +99,15 @@ Be specific and accurate. If uncertain, use "Unknown" type with low confidence.`
 
     const result = await model.generateContent(prompt);
     const responseText = result.response.text().trim();
-    
     // Try to parse JSON response
     try {
       const classification = JSON.parse(responseText);
       docType = classification.type || "Unknown";
       confidence = Math.min(Math.max(classification.confidence || 0.5, 0.0), 1.0);
-      
       // Adjust confidence based on extraction confidence
       if (extractionConfidence < 0.7) {
         confidence = Math.min(confidence, 0.7); // Cap confidence if extraction was poor
       }
-      
       return { 
         docType, 
         confidence, 
@@ -206,7 +115,6 @@ Be specific and accurate. If uncertain, use "Unknown" type with low confidence.`
       };
     } catch (parseErr) {
       console.log('Failed to parse classification response:', responseText);
-      
       // Fallback: try to extract type from text response
       const typeMatch = responseText.match(/type["\s:]+([a-zA-Z]+)/i);
       if (typeMatch) {
@@ -216,13 +124,11 @@ Be specific and accurate. If uncertain, use "Unknown" type with low confidence.`
         docType = "Unknown";
         confidence = 0.3;
       }
-      
       return { docType, confidence, reason: "Fallback classification" };
     }
   } catch (err) {
     console.error('Classification error:', err);
     return { docType: "Unknown", confidence: 0.2, reason: "Classification failed" };
->>>>>>> 128d17d (Backend fixed)
   }
 };
 

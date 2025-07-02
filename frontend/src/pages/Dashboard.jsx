@@ -56,12 +56,6 @@ export default function Dashboard() {
     },
   ];
 
-<<<<<<< HEAD
-  function formatConfidence(conf) {
-    if (typeof conf !== 'number') return '-';
-    return conf <= 1 ? `${(conf * 100).toFixed(1)}%` : `${conf.toFixed(1)}%`;
-  }
-=======
   const getStatusColor = (status) => {
     switch (status) {
       case 'Ingested': return '#1e3a8a';
@@ -83,7 +77,6 @@ export default function Dashboard() {
     }
     return confidence;
   };
->>>>>>> 128d17d (Backend fixed)
 
   return (
     <div className="page-container">

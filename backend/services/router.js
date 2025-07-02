@@ -101,40 +101,35 @@ exports.routeDocument = async (req, res) => {
 
     // Use the provided type or get from document
     const docType = type || doc.type;
-    const docConfidence = confidence || doc.confidence;
+    const routingConfidence = confidence || doc.confidence || 0.5;
+    const extractionConfidence = doc.extractionConfidence || 0.5;
 
-    // Route based on document type and content
-    let destination = await routeDocumentByType(
+    // Route based on document type, content, and confidence
+    const { destination, reason, confidence: finalRoutingConfidence } = await routeDocumentByContent(
       docType,
       doc.name,
       doc.entities,
       doc.extractedText,
       doc.filePath,
-      confidence,
+      routingConfidence,
       extractionConfidence
     );
 
-    // If confidence is 0.5, always send to Human Intervention
-    if (docConfidence === 0.5) {
-      destination = 'Human Intervention';
-    }
-
     const userMessages = {
-      "Accounting ERP": "\ud83d\udcb0 Routed to Accounting",
-      "Legal DMS": "\u2696\ufe0f Routed to Legal",
-      "Analytics Dashboard": "\ud83d\udcca Routed to Analytics",
-      "Expense Tracker": "\ud83e\uddfe Routed to Expenses",
-      "Financial Review": "\ud83d\udcc8 Routed to Finance",
-      Slack: "\ud83d\udcac Sent to Slack for review",
-      "Human Intervention": "\ud83d\udc40 Sent for human intervention",
-      "Manual Review": "\ud83d\udc40 Sent for manual review",
+      "Dashboard": "\ud83d\udcca Routed to Dashboard for analytics and reporting",
+      "Expense Tracker": "\ud83e\uddfe Routed to Expense Tracker for receipt tracking",
+      "Financial Review": "\ud83d\udcc8 Routed to Financial Review for financial documents",
+      "Legal DMS": "\u2696\ufe0f Routed to Legal DMS for contracts and compliance",
+      "Slack": "\ud83d\udcac Sent to Slack for team collaboration",
+      "Manual Review": "\ud83d\udc40 Sent for manual review and intervention",
+      "Unclassified": "\u2753 Sent to Unclassified for further review",
     };
 
     // Determine routing status
     let status = "Routed";
-    if (destination === "Manual Review" || destination === "Unclassified" || routingConfidence < 0.5) {
+    if (destination === "Manual Review" || destination === "Unclassified" || finalRoutingConfidence < 0.5) {
       status = "Human Intervention";
-    } else if (routingConfidence < 0.7) {
+    } else if (finalRoutingConfidence < 0.7) {
       status = "Low Confidence Routing";
     }
 
@@ -161,13 +156,13 @@ exports.routeDocument = async (req, res) => {
     const updatedDoc = ingestor.updateDocument(id, {
       status,
       destination,
-      routingConfidence,
+      routingConfidence: finalRoutingConfidence,
       routingReason: reason,
       path: newPath,
       filePath: newPath,
       messages: {
         ...(ingestor.documents.find((d) => d.id === id)?.messages || {}),
-        route: userMessages[destination] || `\u2705 Routed to: ${destination}`,
+        route: userMessages[destination] || `\u2705 Routed to: ${destination} (${Math.round(finalRoutingConfidence * 100)}% confidence)`,
       },
     });
 
@@ -176,7 +171,7 @@ exports.routeDocument = async (req, res) => {
       message: status === "Human Intervention" ? "Sent for human intervention" : "Routed successfully",
       destination,
       reason,
-      confidence: routingConfidence,
+      confidence: finalRoutingConfidence,
       status,
       userMessage: updatedDoc.messages.route,
       documentId: id,

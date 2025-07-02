@@ -1,6 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { listDocuments, routeDocument } from '../api';
 
+// Mapping from UI display names to backend routing values
+const DESTINATION_MAP = {
+  'Analytics Dashboard': 'Dashboard',
+  'Expense Tracker': 'Expense Tracker',
+  'Financial Review': 'Financial Review',
+  'Legal DMS': 'Legal DMS',
+  'Manual Review': 'Manual Review',
+  'Slack': 'Slack',
+  'Unclassified': 'Unclassified',
+  // Add more mappings as needed
+};
+
 export default function HumanIntervention({ setCurrentPage, setRouteDestination }) {
   const [documents, setDocuments] = useState([]);
   const [selectedDoc, setSelectedDoc] = useState(null);
@@ -50,24 +62,10 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
     try {
       const res = await routeDocument(docId, destination);
       setRoutingResult(res);
-      // Refresh both Human Intervention and Route lists by reloading the page or refetching documents
-      const response = await listDocuments();
-      let docs = [];
-      if (response.success && Array.isArray(response.documents)) {
-        docs = response.documents;
-      } else if (Array.isArray(response)) {
-        docs = response;
-      }
-      const interventionDocs = docs.filter(doc => 
-        doc.status === 'Human Intervention' || 
-        doc.status === 'Ingested' || 
-        doc.status === 'Extracted' ||
-        !doc.destination ||
-        doc.destination === 'Manual Review'
-      );
-      setDocuments(interventionDocs);
+      // Remove the routed document from the local state immediately
+      setDocuments(prevDocs => prevDocs.filter(doc => doc.id !== docId));
       setSelectedDoc(null);
-      // Switch to Route page and open the correct destination
+      // Optionally, update the route page if needed
       if (setCurrentPage && setRouteDestination) {
         setRouteDestination(destination);
         setCurrentPage('route');
@@ -149,23 +147,6 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
                   </div>
                   <div className="feature-title">
                     {doc.name}
-<<<<<<< HEAD
-                    <span style={{ 
-                      marginLeft: '8px', 
-                      fontSize: '0.75rem', 
-                      background: getStatusColor(doc.status), 
-                      color: 'white',
-                      padding: '2px 10px',
-                      borderRadius: '8px',
-                      whiteSpace: 'nowrap',
-                      display: 'inline-block',
-                      fontWeight: 700,
-                      letterSpacing: '0.5px',
-                      lineHeight: 1.5
-                    }}>
-                      {doc.status}
-                    </span>
-=======
                     {doc.status === 'Human Intervention' ? (
                       <span style={{
                         marginLeft: '8px',
@@ -181,20 +162,14 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
                         Human Intervention
                       </span>
                     ) : null}
->>>>>>> 128d17d (Backend fixed)
                   </div>
                 </div>
                 <div className="feature-description">
                   <div><strong>Type:</strong> {doc.type || 'Unknown'}</div>
-<<<<<<< HEAD
-                  <div><strong>Confidence:</strong> {formatConfidence(doc.confidence)}</div>
-                  <div><strong>Destination:</strong> {doc.destination || 'N/A'}</div>
-=======
                   <div><strong>Classification Confidence:</strong> {doc.confidence ? `${(doc.confidence * 100).toFixed(1)}%` : 'N/A'}</div>
                   <div><strong>Extraction Confidence:</strong> {doc.extractionConfidence ? `${(doc.extractionConfidence * 100).toFixed(1)}%` : 'N/A'}</div>
                   <div><strong>Routing Confidence:</strong> {doc.routingConfidence ? `${(doc.routingConfidence * 100).toFixed(1)}%` : 'N/A'}</div>
                   <div><strong>Extraction Method:</strong> {doc.extractionMethod || 'Unknown'}</div>
->>>>>>> 128d17d (Backend fixed)
                   <div><strong>Uploaded:</strong> {doc.timestamps?.ingested ? new Date(doc.timestamps.ingested).toLocaleDateString() : 'Unknown'}</div>
                   {doc.classificationReason && (
                     <div><strong>Classification Reason:</strong> {doc.classificationReason}</div>
@@ -223,55 +198,23 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
       {/* Manual Routing Modal */}
       {selectedDoc && (
         <div
-<<<<<<< HEAD
           onClick={e => { if (e.target === e.currentTarget) setSelectedDoc(null); }}
-=======
->>>>>>> 128d17d (Backend fixed)
           style={{
             position: 'fixed',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-<<<<<<< HEAD
-            background: 'rgba(0, 0, 0, 0.3)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-=======
             background: 'rgba(0, 0, 0, 0.5)',
->>>>>>> 128d17d (Backend fixed)
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 1000
           }}
-<<<<<<< HEAD
-=======
-          onClick={e => {
-            if (e.target === e.currentTarget) setSelectedDoc(null);
-          }}
->>>>>>> 128d17d (Backend fixed)
         >
           <div
             style={{
               background: 'var(--bg-secondary)',
-<<<<<<< HEAD
-              borderRadius: '20px',
-              padding: '32px',
-              maxWidth: '1100px',
-              width: '98%',
-              maxHeight: '95vh',
-              overflowY: 'auto',
-              boxShadow: '0 8px 32px rgba(30,64,175,0.18)',
-              border: '2px solid #1e3a8a',
-              position: 'relative',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'stretch'
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-=======
               borderRadius: '16px',
               padding: '32px',
               maxWidth: '900px',
@@ -296,7 +239,6 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
                 border-radius: 8px;
               }
             `}</style>
->>>>>>> 128d17d (Backend fixed)
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h2 style={{ margin: 0, color: '#1e3a8a', fontWeight: 800, fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span role="img" aria-label="doc">📄</span> {selectedDoc.name}
@@ -382,15 +324,10 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
               <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
                 <div><strong>Status:</strong> {selectedDoc.status}</div>
                 <div><strong>Type:</strong> {selectedDoc.type || 'Unknown'}</div>
-<<<<<<< HEAD
-                <div><strong>Confidence:</strong> {formatConfidence(selectedDoc.confidence)}</div>
-                <div><strong>Destination:</strong> {selectedDoc.destination || 'N/A'}</div>
-=======
                 <div><strong>Classification Confidence:</strong> {selectedDoc.confidence ? `${(selectedDoc.confidence * 100).toFixed(1)}%` : 'N/A'}</div>
                 <div><strong>Extraction Confidence:</strong> {selectedDoc.extractionConfidence ? `${(selectedDoc.extractionConfidence * 100).toFixed(1)}%` : 'N/A'}</div>
                 <div><strong>Routing Confidence:</strong> {selectedDoc.routingConfidence ? `${(selectedDoc.routingConfidence * 100).toFixed(1)}%` : 'N/A'}</div>
                 <div><strong>Extraction Method:</strong> {selectedDoc.extractionMethod || 'Unknown'}</div>
->>>>>>> 128d17d (Backend fixed)
                 <div><strong>Uploaded:</strong> {selectedDoc.timestamps?.ingested ? new Date(selectedDoc.timestamps.ingested).toLocaleDateString() : 'Unknown'}</div>
                 {selectedDoc.classificationReason && (
                   <div><strong>Classification Reason:</strong> {selectedDoc.classificationReason}</div>
@@ -411,62 +348,7 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
               </div>
             </div>
             <div style={{ marginBottom: '24px' }}>
-<<<<<<< HEAD
               <h3 style={{ color: '#2563eb', fontWeight: 700 }}>Select Destination</h3>
-=======
-              <h3>Document Preview</h3>
-              <div
-                className="modal-scrollbar"
-                style={{
-                  background: 'var(--bg-tertiary)',
-                  padding: '16px',
-                  borderRadius: '8px',
-                  marginBottom: '16px',
-                  maxHeight: '300px',
-                  overflowY: 'auto',
-                  overflowX: 'hidden',
-                  textAlign: 'center',
-                }}
-              >
-                {(() => {
-                  const ext = selectedDoc.name.split('.').pop().toLowerCase();
-                  if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext)) {
-                    // Show image preview
-                    const fileName = selectedDoc.name;
-                    // Try to get the file path from doc.path or fallback
-                    let fileUrl = selectedDoc.path || '';
-                    if (fileUrl.startsWith('uploaded_docs/')) {
-                      fileUrl = '/uploads/' + fileName;
-                    } else if (!fileUrl.startsWith('/uploads/')) {
-                      fileUrl = '/uploads/' + fileName;
-                    }
-                    return (
-                      <img
-                        src={fileUrl}
-                        alt={fileName}
-                        style={{
-                          maxWidth: '100%',
-                          maxHeight: '260px',
-                          borderRadius: '8px',
-                          objectFit: 'contain',
-                          background: '#222',
-                        }}
-                      />
-                    );
-                  } else if (selectedDoc.extractedText) {
-                    return (
-                      <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0, textAlign: 'left' }}>{selectedDoc.extractedText}</pre>
-                    );
-                  } else {
-                    return <span style={{ color: 'var(--text-secondary)' }}>No preview available.</span>;
-                  }
-                })()}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <h3>Select Destination</h3>
->>>>>>> 128d17d (Backend fixed)
               <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>
                 Choose the appropriate destination for this document:
               </p>
@@ -475,7 +357,7 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
                   <div 
                     key={option.id}
                     className="feature-card"
-                    onClick={() => handleManualRoute(selectedDoc.id, option.name)}
+                    onClick={() => handleManualRoute(selectedDoc.id, DESTINATION_MAP[option.name] || option.name)}
                     style={{ 
                       cursor: isRouting ? 'not-allowed' : 'pointer',
                       opacity: isRouting ? 0.6 : 1
@@ -497,10 +379,7 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
                 ))}
               </div>
             </div>
-<<<<<<< HEAD
-=======
 
->>>>>>> 128d17d (Backend fixed)
             {isRouting && (
               <div style={{ textAlign: 'center', padding: '16px' }}>
                 <div className="processing-indicator">
@@ -555,4 +434,4 @@ export default function HumanIntervention({ setCurrentPage, setRouteDestination 
       </div>
     </div>
   );
-} 
+}
